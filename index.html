@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Trust Report Builder V12 - Pro Studio</title>
+    <title>Trust Report Builder V13 - Layout Master</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&family=Montserrat:wght@400;700&family=Oswald:wght@500&family=Pacifico&family=Playfair+Display:ital,wght@0,600;1,600&family=Poppins:wght@400;600&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
@@ -11,9 +11,9 @@
         body { font-family: 'Roboto', Arial, sans-serif; background-color: #2c3e50; display: flex; flex-direction: column; align-items: center; padding: 20px; margin: 0; color: #333; }
         
         /* The Toolbar */
-        .controls { background: white; padding: 15px 20px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 8px 25px rgba(0,0,0,0.3); width: 1020px; display: flex; flex-direction: column; gap: 10px; z-index: 100; border: 1px solid #e1e4e8;}
+        .controls { background: white; padding: 15px 20px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 8px 25px rgba(0,0,0,0.3); width: 1100px; display: flex; flex-direction: column; gap: 10px; z-index: 100; border: 1px solid #e1e4e8;}
         .toolbar-row { display: flex; justify-content: space-between; align-items: center; gap: 10px;}
-        .tool-group { display: flex; align-items: center; gap: 8px; flex-wrap: wrap;}
+        .tool-group { display: flex; align-items: center; gap: 6px; flex-wrap: wrap;}
         
         button { background-color: #f1f3f4; color: #3c4043; border: 1px solid #dadce0; padding: 6px 10px; font-size: 13px; font-weight: bold; border-radius: 6px; cursor: pointer; transition: 0.2s; }
         button:hover { background-color: #e8eaed; }
@@ -31,17 +31,15 @@
         .canvas-container { box-shadow: 0 10px 30px rgba(0,0,0,0.5); overflow: hidden; background: white;}
         #poster-canvas { width: 900px; height: 1250px; background-color: #fff9eb; position: relative; overflow: hidden; transform-origin: top left; }
         
-        /* Draggable Base */
-        .draggable { position: absolute; cursor: grab; z-index: 10; border: 1px dashed transparent; transform-origin: center center; }
-        .draggable:active { cursor: grabbing; }
-        
-        /* NEW: Editable Text Behavior */
+        /* Editable Elements */
         .editable-text { outline: 1px solid transparent; transition: outline 0.2s; padding: 4px 8px; border-radius: 4px; display: inline-block; min-width: 20px; box-sizing: border-box; resize: both; overflow: hidden; }
-        /* When selected but not typing */
         .editable-text.active-item { outline: 2px dashed #3498db; }
-        /* When double-clicked to type */
         .editable-text[contenteditable="true"] { outline: 2px solid #8e44ad !important; background-color: rgba(255,255,255,0.9); cursor: text; }
 
+        .draggable { position: absolute; cursor: grab; z-index: 10; border: 1px dashed transparent; transform-origin: center center; }
+        .draggable:active { cursor: grabbing; }
+        .draggable:hover::after { content: "↔ Move | ↘ Resize"; position: absolute; top: -15px; left: 0; background: #8e44ad; color: white; font-size: 10px; padding: 2px 6px; border-radius: 10px; pointer-events: none; z-index: 100;}
+        
         /* Specific Containers */
         .drag-line-container { resize: horizontal; overflow: hidden; display: flex; align-items: center; width: 300px; height: 20px; border: 1px dashed transparent; padding: 0 5px;}
         .drag-line-container.active-item { border: 2px dashed #3498db; background: rgba(52, 152, 219, 0.05); }
@@ -100,6 +98,18 @@
             <button class="btn-format" onclick="toggleFormat('fontStyle', 'italic', 'normal')" title="Italic"><i>I</i></button>
             <button class="btn-format" onclick="toggleFormat('textDecoration', 'underline', 'none')" title="Underline"><u>U</u></button>
             
+            <div style="width: 1px; height: 15px; background: #ccc; margin: 0 2px;"></div>
+            
+            <button class="btn-format" onclick="setTextAlign('left')" title="Align Left" style="font-family: Arial;">⇤</button>
+            <button class="btn-format" onclick="setTextAlign('center')" title="Align Center" style="font-family: Arial;">↔</button>
+            <button class="btn-format" onclick="setTextAlign('right')" title="Align Right" style="font-family: Arial;">⇥</button>
+            <button class="btn-format" onclick="setTextAlign('justify')" title="Justify" style="font-family: Arial;">≡</button>
+
+            <div style="width: 1px; height: 15px; background: #ccc; margin: 0 2px;"></div>
+
+            <button class="btn-format" onclick="alignBox('centerX')" title="Center Box Horizontally" style="font-family: Arial; color: #2980b9;">⬌</button>
+            <button class="btn-format" onclick="alignBox('centerY')" title="Center Box Vertically" style="font-family: Arial; color: #2980b9;">⬍</button>
+            
             <select id="lineStylePicker" onchange="updateLineFormat()" style="display:none;">
                 <option value="solid">Solid Line</option>
                 <option value="dashed">Dashed Line</option>
@@ -107,6 +117,8 @@
             </select>
             <input type="number" id="lineThicknessPicker" style="width: 40px; display:none;" value="2" title="Line Thickness (px)" onchange="updateLineFormat()">
             
+            <div style="width: 1px; height: 15px; background: #ccc; margin: 0 2px;"></div>
+
             <input type="number" id="rotationPicker" style="width: 50px;" value="0" placeholder="0" title="Rotate (Degrees 0-360)" onchange="updateRotation()">
             <span style="font-size: 12px; margin-right: 5px;">Rotate°</span>
 
@@ -115,7 +127,7 @@
             <input type="color" id="primaryColorPicker" title="Color (Text or Line)" onchange="updateColor()">
             <input type="color" id="textBgColorPicker" value="#ffffff" title="Text Background Color" onchange="updateTextBg()">
             
-            <select id="fontFamilyPicker" onchange="updateFontFamily()">
+            <select id="fontFamilyPicker" onchange="updateFontFamily()" style="max-width: 110px;">
                 <option value="Arial">Arial</option>
                 <option value="'Times New Roman'">Times New Roman</option>
                 <option value="'Roboto', sans-serif">Roboto</option>
@@ -126,7 +138,7 @@
                 <option value="'Pacifico', cursive">Pacifico</option>
                 <option value="'Caveat', cursive">Caveat</option>
             </select>
-            <input type="number" id="fontSizePicker" style="width: 50px;" placeholder="Size" onchange="updateFontSize()">
+            <input type="number" id="fontSizePicker" style="width: 45px;" placeholder="Size" onchange="updateFontSize()">
         </div>
         <button class="btn-success" onclick="downloadPoster()">⬇️ Download</button>
     </div>
@@ -228,7 +240,7 @@ JHARKHAND, 01</textarea>
     // Initialize all existing draggables
     document.querySelectorAll('.draggable').forEach(makeDraggable);
 
-    // --- 1. DOUBLE CLICK TO EDIT TEXT (NEW) ---
+    // --- 1. DOUBLE CLICK TO EDIT TEXT ---
     document.addEventListener('dblclick', function(e) {
         let textNode = e.target.closest('.editable-text');
         let legendText = e.target.closest('.legend-text');
@@ -242,7 +254,7 @@ JHARKHAND, 01</textarea>
         }
     });
 
-    // --- 2. SELECTION ENGINE (UPDATED) ---
+    // --- 2. SELECTION ENGINE ---
     function clearActiveStyles() {
         document.querySelectorAll('.active-item').forEach(el => el.classList.remove('active-item'));
     }
@@ -267,7 +279,6 @@ JHARKHAND, 01</textarea>
         // 1. Establish what was clicked
         let dragged = e.target.closest('.draggable');
         if(!dragged && !e.target.closest('.controls') && !e.target.closest('#chartModal')) {
-            // Clicked empty canvas space
             clearActiveStyles();
             activeDraggable = null; activeElement = null; activeLine = null;
             document.getElementById('active-status').innerText = "Select Item 👉";
@@ -322,7 +333,6 @@ JHARKHAND, 01</textarea>
             document.getElementById('lineStylePicker').value = compStyle.borderTopStyle;
         } 
         else if (dragged) {
-            // It's an image or chart
             activeElement = null; activeLine = null;
             document.getElementById('active-status').innerText = "Graphic Selected";
         }
@@ -336,7 +346,7 @@ JHARKHAND, 01</textarea>
         canvas.style.height = sizes[1] + 'px';
     }
 
-    // --- 4. FORMATTING ENGINE ---
+    // --- 4. FORMATTING ENGINE (WITH NEW ALIGNMENT TOOLS) ---
     function updateRotation() {
         if(!activeDraggable) return;
         let deg = document.getElementById('rotationPicker').value;
@@ -369,7 +379,33 @@ JHARKHAND, 01</textarea>
         }
     }
 
-    // --- 5. ITEM MANAGEMENT (DELETE ONLY VIA BUTTON NOW) ---
+    // NEW: Text Align
+    function setTextAlign(align) {
+        if(activeElement) {
+            activeElement.style.textAlign = align;
+        }
+    }
+
+    // NEW: Box Alignment (Canvas Snapping)
+    function alignBox(mode) {
+        if(!activeDraggable) {
+            alert("Click an item first to align it!");
+            return;
+        }
+        const canvas = document.getElementById('poster-canvas');
+        
+        if (mode === 'centerX') {
+            // Calculate center minus half the width of the box
+            let newLeft = (canvas.offsetWidth - activeDraggable.offsetWidth) / 2;
+            activeDraggable.style.left = newLeft + 'px';
+        } 
+        else if (mode === 'centerY') {
+            let newTop = (canvas.offsetHeight - activeDraggable.offsetHeight) / 2;
+            activeDraggable.style.top = newTop + 'px';
+        }
+    }
+
+    // --- 5. ITEM MANAGEMENT ---
     function deleteActive() {
         if(!activeDraggable) { alert("Click an item to select it, then press Delete."); return; }
         activeDraggable.remove();
@@ -385,8 +421,8 @@ JHARKHAND, 01</textarea>
         clone.style.top = (currentTop + 30) + 'px';
         clone.style.left = (currentLeft + 30) + 'px';
         clone.style.zIndex = ++highestZ;
-        clone.classList.remove('active-item'); // Don't highlight clone initially
-        clone.removeAttribute('contenteditable'); // Ensure clone isn't in edit mode
+        clone.classList.remove('active-item'); 
+        clone.removeAttribute('contenteditable'); 
         
         document.getElementById('poster-canvas').appendChild(clone);
         makeDraggable(clone);
@@ -445,9 +481,7 @@ JHARKHAND, 01</textarea>
         var currentTop = 0, currentLeft = 0;
 
         elmnt.onmousedown = function(e) {
-            // Ignore resize handle
             if(e.offsetX > elmnt.offsetWidth - 20 && e.offsetY > elmnt.offsetHeight - 20) return;
-            // Ignore if currently typing inside it
             if(elmnt.getAttribute('contenteditable') === 'true' || (e.target.tagName === 'SPAN' && e.target.getAttribute('contenteditable') === 'true')) return;
             
             e.preventDefault();
@@ -465,7 +499,7 @@ JHARKHAND, 01</textarea>
         };
     }
 
-    // --- 8. CHART ENGINE (CUSTOM LEGENDS) ---
+    // --- 8. CHART ENGINE ---
     let myChartInstance = null;
     const chartColors = ['#ff7f0e', '#1f77b4', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f'];
 
@@ -523,9 +557,8 @@ JHARKHAND, 01</textarea>
     // --- 9. DOWNLOAD ENGINE ---
     function downloadPoster() {
         const poster = document.getElementById('poster-canvas');
-        clearActiveStyles(); // Remove blue selection boxes
+        clearActiveStyles(); 
         
-        // Disable UI elements for screenshot
         document.querySelectorAll('.editable-text').forEach(el => { el.removeAttribute('contenteditable'); el.style.resize = 'none'; });
         document.querySelectorAll('.drag-image-container').forEach(el => el.style.resize = 'none');
         document.querySelectorAll('.chart-wrapper').forEach(el => { el.style.resize = 'none'; });
@@ -537,11 +570,10 @@ JHARKHAND, 01</textarea>
 
         html2canvas(poster, { scale: 2, useCORS: true }).then(canvas => {
             let link = document.createElement('a');
-            link.download = 'Professional_Studio_Report.png';
+            link.download = 'Layout_Master_Report.png';
             link.href = canvas.toDataURL("image/png");
             link.click();
             
-            // Restore UI Elements
             document.querySelectorAll('.editable-text').forEach(el => { el.style.resize = 'both'; });
             document.querySelectorAll('.drag-image-container').forEach(el => { el.style.resize = 'both'; });
             document.querySelectorAll('.chart-wrapper').forEach(el => { el.style.resize = 'both'; });
