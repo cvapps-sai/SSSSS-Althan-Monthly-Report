@@ -2,55 +2,57 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Trust Report Builder V8 - Publisher Pro</title>
+    <title>Trust Report Builder V9 - Design Studio</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&family=Montserrat:wght@400;700&family=Oswald:wght@500&family=Pacifico&family=Playfair+Display:ital,wght@0,600;1,600&family=Poppins:wght@400;600&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    
     <style>
-        body { font-family: Arial, sans-serif; background-color: #2c3e50; display: flex; flex-direction: column; align-items: center; padding: 20px; margin: 0; color: #333; }
+        body { font-family: 'Roboto', Arial, sans-serif; background-color: #2c3e50; display: flex; flex-direction: column; align-items: center; padding: 20px; margin: 0; color: #333; }
         
         /* The Toolbar */
-        .controls { background: white; padding: 15px 20px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 8px 25px rgba(0,0,0,0.3); width: 950px; display: flex; flex-direction: column; gap: 10px; z-index: 100; border: 1px solid #e1e4e8;}
+        .controls { background: white; padding: 15px 20px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 8px 25px rgba(0,0,0,0.3); width: 1000px; display: flex; flex-direction: column; gap: 10px; z-index: 100; border: 1px solid #e1e4e8;}
         .toolbar-row { display: flex; justify-content: space-between; align-items: center; gap: 10px;}
         .tool-group { display: flex; align-items: center; gap: 8px; flex-wrap: wrap;}
         
-        button { background-color: #f1f3f4; color: #3c4043; border: 1px solid #dadce0; padding: 8px 12px; font-size: 14px; font-weight: bold; border-radius: 6px; cursor: pointer; transition: 0.2s; }
+        button { background-color: #f1f3f4; color: #3c4043; border: 1px solid #dadce0; padding: 6px 10px; font-size: 13px; font-weight: bold; border-radius: 6px; cursor: pointer; transition: 0.2s; }
         button:hover { background-color: #e8eaed; }
-        .btn-success { background-color: #27ae60; color: white; border: none; font-size: 15px; padding: 10px 15px;}
+        .btn-success { background-color: #27ae60; color: white; border: none; font-size: 14px; padding: 8px 15px;}
         .btn-success:hover { background-color: #2ecc71; }
         .btn-primary { background-color: #3498db; color: white; border: none; }
         .btn-primary:hover { background-color: #2980b9; }
-        .btn-format { font-family: "Times New Roman", serif; font-size: 16px; width: 35px; text-align: center; padding: 5px; }
+        .btn-format { font-family: "Times New Roman", serif; font-size: 15px; width: 30px; text-align: center; padding: 4px; }
         
-        input[type="color"] { cursor: pointer; border: none; width: 30px; height: 30px; padding: 0; border-radius: 6px; overflow: hidden; }
-        select, input[type="number"] { padding: 6px; border: 1px solid #dadce0; border-radius: 6px; font-size: 13px; background: #f8f9fa; cursor: pointer; }
+        input[type="color"] { cursor: pointer; border: none; width: 28px; height: 28px; padding: 0; border-radius: 6px; overflow: hidden; }
+        select, input[type="number"] { padding: 5px; border: 1px solid #dadce0; border-radius: 6px; font-size: 13px; background: #f8f9fa; cursor: pointer; }
 
-        /* The Poster Canvas Container (for scaling visibility on small screens) */
         .canvas-container { box-shadow: 0 10px 30px rgba(0,0,0,0.5); overflow: hidden; background: white;}
-        
-        /* The Actual Canvas */
         #poster-canvas { width: 900px; height: 1250px; background-color: #fff9eb; position: relative; overflow: hidden; transform-origin: top left; }
         
-        /* Editable Elements */
+        /* Elements */
         [contenteditable="true"] { outline: 1px solid transparent; transition: all 0.2s; padding: 4px 8px; border-radius: 4px; cursor: text; display: inline-block; min-width: 20px; box-sizing: border-box; resize: both; overflow: hidden; }
         [contenteditable="true"]:hover { outline: 1px dashed #8e44ad; background: rgba(0,0,0,0.02);}
         [contenteditable="true"]:focus { outline: 2px solid #8e44ad; background-color: rgba(255,255,255,0.9); }
 
-        /* Free-Form Draggable Blocks */
         .draggable { position: absolute; cursor: grab; z-index: 10; border: 1px dashed transparent; }
         .draggable:active { cursor: grabbing; }
         .draggable:hover::after { content: "↔ Move | ↘ Resize"; position: absolute; top: -15px; left: 0; background: #8e44ad; color: white; font-size: 10px; padding: 2px 6px; border-radius: 10px; pointer-events: none; z-index: 100;}
         
-        /* Resizable Containers */
+        /* NEW: Line Container */
+        .drag-line-container { resize: horizontal; overflow: hidden; display: flex; align-items: center; width: 300px; height: 20px; border: 1px dashed transparent; padding: 0 5px;}
+        .drag-line-container:hover { border: 1px dashed #8e44ad; background: rgba(142,68,173,0.05); }
+        .line-visual { width: 100%; border-top: 2px solid black; pointer-events: none; }
+
         .drag-image-container { resize: both; overflow: hidden; display: flex; justify-content: center; align-items: center; width: 150px; height: 150px; border: 2px dashed #aaa; background: white; }
         .drag-image-container img { width: 100%; height: 100%; object-fit: contain; pointer-events: none; }
         
         .chart-wrapper { resize: both; overflow: hidden; display: flex; justify-content: center; align-items: center; width: 350px; height: 300px; background: rgba(255,255,255,0.5); border: 2px dashed #aaa; padding: 10px; border-radius: 8px;}
-        .chart-wrapper canvas { width: 100% !important; height: 100% !important; pointer-events: none;} /* pointer events none so you can drag the box */
+        .chart-wrapper canvas { width: 100% !important; height: 100% !important; pointer-events: none;}
 
         .data-row { width: 380px; display: flex; justify-content: space-between; font-size: 17px; }
 
-        /* Modals */
-        #chartModal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 25px; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); z-index: 1000; width: 350px;}
+        #chartModal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); z-index: 1000; width: 320px;}
         #chartModal textarea { width: 100%; height: 150px; margin-bottom: 15px; font-family: monospace; padding: 10px; box-sizing: border-box;}
     </style>
 </head>
@@ -59,48 +61,58 @@
 <div class="controls" id="hide-controls">
     <div class="toolbar-row">
         <div class="tool-group">
-            <button onclick="addFloatingText()">➕ Add Text Box</button>
+            <button onclick="addFloatingText()">➕ Text Box</button>
+            <button onclick="addFloatingLine()">📏 Add Line</button>
             <button onclick="document.getElementById('image-upload').click()">🖼️ Add Photo</button>
             <input type="file" id="image-upload" style="display:none;" accept="image/*" onchange="addDraggableImage(event)">
             <button class="btn-primary" onclick="duplicateActive()">📋 Duplicate Selected</button>
             <button class="btn-primary" onclick="document.getElementById('chartModal').style.display='block'">📊 Edit Chart</button>
         </div>
         <div class="tool-group">
-            <span style="font-size: 13px; font-weight:bold;">📄 Page Setup:</span>
+            <span style="font-size: 12px; font-weight:bold;">Page:</span>
             <select id="pageSetup" onchange="changePageSize()">
-                <option value="900,1250">Custom (Default Portrait)</option>
-                <option value="794,1123">A4 (Standard Print)</option>
-                <option value="1123,1587">A3 (Large Print)</option>
-                <option value="816,1056">US Letter</option>
-                <option value="1200,900">Landscape Presentation</option>
+                <option value="900,1250">Default (Portrait)</option>
+                <option value="794,1123">A4 Print</option>
+                <option value="1123,1587">A3 Poster</option>
+                <option value="1200,900">Landscape</option>
             </select>
-            
-            <span style="font-size: 13px; font-weight:bold; margin-left: 10px;">Bg Color:</span>
+            <span style="font-size: 12px; font-weight:bold; margin-left: 5px;">Bg:</span>
             <input type="color" id="bgColorPicker" value="#fff9eb" onchange="document.getElementById('poster-canvas').style.backgroundColor = this.value">
         </div>
     </div>
     
-    <div class="toolbar-row" style="background: #f8f9fa; padding: 10px; border-radius: 8px; border: 1px solid #e1e4e8;">
+    <div class="toolbar-row" style="background: #f8f9fa; padding: 8px; border-radius: 8px; border: 1px solid #e1e4e8;">
         <div class="tool-group">
-            <span id="active-status" style="font-size: 13px; font-weight: bold; color: #8e44ad;">Select Text to Edit 👉</span>
+            <span id="active-status" style="font-size: 12px; font-weight: bold; color: #8e44ad; width: 90px;">Select Item 👉</span>
             
             <button class="btn-format" onclick="toggleFormat('fontWeight', 'bold', 'normal')" title="Bold"><b>B</b></button>
             <button class="btn-format" onclick="toggleFormat('fontStyle', 'italic', 'normal')" title="Italic"><i>I</i></button>
             <button class="btn-format" onclick="toggleFormat('textDecoration', 'underline', 'none')" title="Underline"><u>U</u></button>
             
-            <div style="width: 1px; height: 20px; background: #ccc; margin: 0 5px;"></div>
-            
-            <input type="color" id="textColorPicker" title="Text Color" onchange="updateActiveText('color')">
-            <input type="color" id="textBgColorPicker" value="#ffffff" title="Text Background Color" onchange="updateActiveText('backgroundColor')">
-            
-            <select id="fontFamilyPicker" onchange="updateActiveText('fontFamily')">
-                <option value="Arial">Arial</option>
-                <option value="'Times New Roman'">Times New Roman</option>
-                <option value="'Courier New'">Courier</option>
-                <option value="Georgia">Georgia</option>
-                <option value="Verdana">Verdana</option>
+            <select id="lineStylePicker" onchange="updateLineFormat()" style="display:none;">
+                <option value="solid">Solid Line</option>
+                <option value="dashed">Dashed Line</option>
+                <option value="dotted">Dotted Line</option>
             </select>
-            <input type="number" id="fontSizePicker" style="width: 60px;" placeholder="Size" onchange="updateActiveText('fontSize')">
+            <input type="number" id="lineThicknessPicker" style="width: 50px; display:none;" value="2" title="Line Thickness (px)" onchange="updateLineFormat()">
+            
+            <div style="width: 1px; height: 15px; background: #ccc; margin: 0 5px;"></div>
+            
+            <input type="color" id="primaryColorPicker" title="Color (Text or Line)" onchange="updateColor()">
+            <input type="color" id="textBgColorPicker" value="#ffffff" title="Text Background Color" onchange="updateTextBg()">
+            
+            <select id="fontFamilyPicker" onchange="updateFontFamily()">
+                <option value="Arial">Arial (Standard)</option>
+                <option value="'Times New Roman'">Times New Roman</option>
+                <option value="'Roboto', sans-serif">Roboto (Modern Sans)</option>
+                <option value="'Montserrat', sans-serif">Montserrat (Bold Sans)</option>
+                <option value="'Poppins', sans-serif">Poppins (Geometric)</option>
+                <option value="'Playfair Display', serif">Playfair Display (Elegant)</option>
+                <option value="'Oswald', sans-serif">Oswald (Tall & Narrow)</option>
+                <option value="'Pacifico', cursive">Pacifico (Brush Script)</option>
+                <option value="'Caveat', cursive">Caveat (Handwriting)</option>
+            </select>
+            <input type="number" id="fontSizePicker" style="width: 50px;" placeholder="Size" onchange="updateFontSize()">
         </div>
         <button class="btn-success" onclick="downloadPoster()">⬇️ Download Layout</button>
     </div>
@@ -109,27 +121,31 @@
 <div class="canvas-container">
     <div id="poster-canvas">
         
-        <div class="draggable" contenteditable="true" style="top: 30px; left: 350px; font-size: 18px; width: 200px; text-align: center;">AUM SRI SAI RAM</div>
-        <div class="draggable" contenteditable="true" style="top: 60px; left: 150px; font-family: 'Times New Roman'; font-size: 34px; font-weight: bold; width: 600px; text-align: center;">PRASHANTI CHARITABLE TRUST</div>
-        <div class="draggable" contenteditable="true" style="top: 105px; left: 250px; font-size: 20px; width: 400px; text-align: center;">Sri Sathya Sai Seva Samiti, Althan, Surat</div>
+        <div class="draggable" contenteditable="true" style="top: 30px; left: 350px; font-size: 18px; width: 200px; text-align: center; font-family: 'Poppins', sans-serif; font-weight: bold;">AUM SRI SAI RAM</div>
+        <div class="draggable" contenteditable="true" style="top: 60px; left: 150px; font-family: 'Playfair Display', serif; font-size: 38px; font-weight: bold; width: 600px; text-align: center; color: #cc0000;">PRASHANTI CHARITABLE TRUST</div>
+        <div class="draggable" contenteditable="true" style="top: 115px; left: 250px; font-size: 20px; width: 400px; text-align: center; font-family: 'Roboto', sans-serif;">Sri Sathya Sai Seva Samiti, Althan, Surat</div>
 
-        <div class="draggable" contenteditable="true" style="top: 150px; left: 25px; background-color: #cc0000; color: white; width: 850px; text-align: center; padding: 12px; font-size: 22px; font-weight: bold; border-radius: 6px;">Monthly Report February 2026</div>
+        <div class="draggable" contenteditable="true" style="top: 160px; left: 25px; background-color: #cc0000; color: white; width: 850px; text-align: center; padding: 12px; font-size: 22px; font-weight: bold; border-radius: 6px; font-family: 'Montserrat', sans-serif;">Monthly Report February 2026</div>
 
-        <div class="draggable" contenteditable="true" style="top: 250px; left: 40px; font-size: 24px; font-weight: bold; color: #512888; border-bottom: 2px dashed #ccc; width: 380px;">Eye OPD</div>
-        <div class="draggable data-row" contenteditable="true" style="top: 290px; left: 40px;"><span>OPD Sessions</span><b>14</b></div>
-        <div class="draggable data-row" contenteditable="true" style="top: 320px; left: 40px;"><span>Total Patients</span><b>580</b></div>
-        <div class="draggable data-row" contenteditable="true" style="top: 350px; left: 40px;"><span>New Patients</span><b>329</b></div>
-        <div class="draggable data-row" contenteditable="true" style="top: 380px; left: 40px;"><span>Cataract Diagnosed</span><b>193</b></div>
-        <div class="draggable data-row" contenteditable="true" style="top: 420px; left: 40px; border-top: 1px solid #ccc; padding-top: 5px;"><b>Grand Total OPD</b><b>1,39,455</b></div>
+        <div class="draggable" contenteditable="true" style="top: 260px; left: 40px; font-size: 24px; font-weight: bold; color: #512888; border-bottom: 2px dashed #ccc; width: 380px;">Eye OPD</div>
+        <div class="draggable data-row" contenteditable="true" style="top: 300px; left: 40px;"><span>OPD Sessions</span><b>14</b></div>
+        <div class="draggable data-row" contenteditable="true" style="top: 330px; left: 40px;"><span>Total Patients</span><b>580</b></div>
+        <div class="draggable data-row" contenteditable="true" style="top: 360px; left: 40px;"><span>New Patients</span><b>329</b></div>
+        <div class="draggable data-row" contenteditable="true" style="top: 390px; left: 40px;"><span>Cataract Diagnosed</span><b>193</b></div>
+        <div class="draggable data-row" contenteditable="true" style="top: 430px; left: 40px; border-top: 1px solid #ccc; padding-top: 5px;"><b>Grand Total OPD</b><b>1,39,455</b></div>
 
-        <div class="draggable" contenteditable="true" style="top: 250px; left: 480px; font-size: 24px; font-weight: bold; color: #1f497d; border-bottom: 2px dashed #ccc; width: 380px;">Eye Cataract Operations</div>
-        <div class="draggable data-row" contenteditable="true" style="top: 290px; left: 480px;"><span>OT Sessions</span><b>09</b></div>
+        <div class="draggable drag-line-container" style="top: 480px; left: 40px; width: 380px;">
+            <div class="line-visual" style="border-top: 3px solid #ccc;"></div>
+        </div>
+
+        <div class="draggable" contenteditable="true" style="top: 260px; left: 480px; font-size: 24px; font-weight: bold; color: #1f497d; border-bottom: 2px dashed #ccc; width: 380px;">Eye Cataract Operations</div>
+        <div class="draggable data-row" contenteditable="true" style="top: 300px; left: 480px;"><span>OT Sessions</span><b>09</b></div>
         
-        <div class="draggable chart-wrapper" style="top: 330px; left: 480px;">
+        <div class="draggable chart-wrapper" style="top: 340px; left: 480px;">
             <canvas id="myCanvasChart"></canvas>
         </div>
 
-        <div class="draggable data-row" contenteditable="true" style="top: 670px; left: 480px; border-top: 1px solid #ccc; padding-top: 5px;"><b>Grand Total Surgeries</b><b>15,485</b></div>
+        <div class="draggable data-row" contenteditable="true" style="top: 660px; left: 480px; border-top: 1px solid #ccc; padding-top: 5px;"><b>Grand Total Surgeries</b><b>15,485</b></div>
 
         <div class="draggable" contenteditable="true" style="top: 1140px; left: 50px; color: #512888; font-weight: bold; width: 400px;">Blood Donation Camps: 07 | Units: 204</div>
         <div class="draggable" contenteditable="true" style="top: 1140px; left: 500px; color: #1e8449; font-weight: bold; width: 400px;">Monthly Narayan Seva: 750 | Total: 5,654</div>
@@ -138,7 +154,6 @@
 
 <div id="chartModal">
     <h3 style="margin-top:0;">Chart Settings</h3>
-    
     <label style="font-size: 14px; font-weight: bold;">Chart Type:</label>
     <select id="chartTypeSelect" style="width: 100%; margin-bottom: 15px;">
         <option value="pie">Pie Chart</option>
@@ -161,56 +176,93 @@ Jharkhand, 1</textarea>
 </div>
 
 <script>
-    let activeElement = null;
-    let activeDraggable = null;
+    let activeElement = null; // For Text
+    let activeLine = null;    // For Lines
+    let activeDraggable = null; // For Duplication
     let highestZ = 100; 
 
-    // Initialize dragging
     document.querySelectorAll('.draggable').forEach(makeDraggable);
 
-    // --- 1. PAGE SETUP (NEW) ---
+    // --- 1. PAGE SETUP ---
     function changePageSize() {
         const sizes = document.getElementById('pageSetup').value.split(',');
         const canvas = document.getElementById('poster-canvas');
         canvas.style.width = sizes[0] + 'px';
         canvas.style.height = sizes[1] + 'px';
-        alert("Canvas size updated! You may need to drag your elements to fit the new layout.");
     }
 
-    // --- 2. SELECTION ENGINE ---
+    // --- 2. SELECTION ENGINE (TEXT vs. LINES) ---
+    function rgbToHex(col) {
+        if(col.charAt(0)=='r') {
+            col=col.replace('rgb(','').replace('rgba(','').replace(')','').split(',');
+            let r=parseInt(col[0], 10).toString(16), g=parseInt(col[1], 10).toString(16), b=parseInt(col[2], 10).toString(16);
+            return "#"+(r.length==1?"0"+r:r)+(g.length==1?"0"+g:g)+(b.length==1?"0"+b:b);
+        } return col;
+    }
+
     document.addEventListener('mousedown', function(e) {
         if(e.target.closest('.draggable')) {
             activeDraggable = e.target.closest('.draggable');
             activeDraggable.style.zIndex = ++highestZ;
         }
 
+        // If they click a Text Box
         if(e.target.getAttribute('contenteditable') === 'true') {
             activeElement = e.target;
-            document.getElementById('active-status').innerText = "Text Selected!";
+            activeLine = null;
+            
+            document.getElementById('active-status').innerText = "Text Selected";
+            document.getElementById('lineStylePicker').style.display = 'none';
+            document.getElementById('lineThicknessPicker').style.display = 'none';
+            document.getElementById('textBgColorPicker').style.display = 'inline-block';
+            document.getElementById('fontFamilyPicker').style.display = 'inline-block';
+            document.getElementById('fontSizePicker').style.display = 'inline-block';
             
             let compStyle = window.getComputedStyle(activeElement);
-            document.getElementById('fontFamilyPicker').value = compStyle.fontFamily.replace(/"/g, '');
+            document.getElementById('fontFamilyPicker').value = compStyle.fontFamily.split(',')[0].replace(/"/g, '');
             document.getElementById('fontSizePicker').value = parseInt(compStyle.fontSize) || 16;
-            
-            function rgbToHex(col) {
-                if(col.charAt(0)=='r') {
-                    col=col.replace('rgb(','').replace('rgba(','').replace(')','').split(',');
-                    let r=parseInt(col[0], 10).toString(16), g=parseInt(col[1], 10).toString(16), b=parseInt(col[2], 10).toString(16);
-                    return "#"+(r.length==1?"0"+r:r)+(g.length==1?"0"+g:g)+(b.length==1?"0"+b:b);
-                } return col;
-            }
-            document.getElementById('textColorPicker').value = rgbToHex(compStyle.color);
+            document.getElementById('primaryColorPicker').value = rgbToHex(compStyle.color);
             document.getElementById('textBgColorPicker').value = rgbToHex(compStyle.backgroundColor) === 'transparent' ? '#ffffff' : rgbToHex(compStyle.backgroundColor);
+        }
+        
+        // If they click a Line Box
+        else if(e.target.closest('.drag-line-container')) {
+            activeLine = e.target.closest('.drag-line-container').querySelector('.line-visual');
+            activeElement = null;
+            
+            document.getElementById('active-status').innerText = "Line Selected";
+            document.getElementById('lineStylePicker').style.display = 'inline-block';
+            document.getElementById('lineThicknessPicker').style.display = 'inline-block';
+            
+            // Hide text-specific tools
+            document.getElementById('textBgColorPicker').style.display = 'none';
+            document.getElementById('fontFamilyPicker').style.display = 'none';
+            document.getElementById('fontSizePicker').style.display = 'none';
+            
+            let compStyle = window.getComputedStyle(activeLine);
+            document.getElementById('primaryColorPicker').value = rgbToHex(compStyle.borderTopColor);
+            document.getElementById('lineThicknessPicker').value = parseInt(compStyle.borderTopWidth);
+            document.getElementById('lineStylePicker').value = compStyle.borderTopStyle;
         }
     });
 
     // --- 3. FORMATTING ENGINE ---
-    function updateActiveText(property) {
-        if(!activeElement) return;
-        if(property === 'color') activeElement.style.color = document.getElementById('textColorPicker').value;
-        if(property === 'backgroundColor') activeElement.style.backgroundColor = document.getElementById('textBgColorPicker').value;
-        if(property === 'fontFamily') activeElement.style.fontFamily = document.getElementById('fontFamilyPicker').value;
-        if(property === 'fontSize') activeElement.style.fontSize = document.getElementById('fontSizePicker').value + 'px';
+    function updateColor() {
+        const color = document.getElementById('primaryColorPicker').value;
+        if(activeElement) activeElement.style.color = color;
+        if(activeLine) activeLine.style.borderTopColor = color;
+    }
+    
+    function updateTextBg() {
+        if(activeElement) activeElement.style.backgroundColor = document.getElementById('textBgColorPicker').value;
+    }
+    
+    function updateFontFamily() {
+        if(activeElement) activeElement.style.fontFamily = document.getElementById('fontFamilyPicker').value;
+    }
+    
+    function updateFontSize() {
+        if(activeElement) activeElement.style.fontSize = document.getElementById('fontSizePicker').value + 'px';
     }
 
     function toggleFormat(styleProp, activeVal, defaultVal) {
@@ -222,10 +274,17 @@ Jharkhand, 1</textarea>
             activeElement.style[styleProp] = activeVal;
         }
     }
+    
+    // NEW: Line Formatter
+    function updateLineFormat() {
+        if(!activeLine) return;
+        activeLine.style.borderTopStyle = document.getElementById('lineStylePicker').value;
+        activeLine.style.borderTopWidth = document.getElementById('lineThicknessPicker').value + 'px';
+    }
 
     // --- 4. DUPLICATE FEATURE ---
     function duplicateActive() {
-        if(!activeDraggable) { alert("Click an item first to duplicate it."); return; }
+        if(!activeDraggable) return;
         let clone = activeDraggable.cloneNode(true);
         let currentTop = parseInt(clone.style.top) || 0;
         let currentLeft = parseInt(clone.style.left) || 0;
@@ -237,31 +296,48 @@ Jharkhand, 1</textarea>
         makeDraggable(clone);
     }
 
-    // --- 5. ADD TEXT BOX ---
+    // --- 5. ADD TEXT & LINES ---
     function addFloatingText() {
         const textDiv = document.createElement('div');
         textDiv.className = 'draggable';
         textDiv.setAttribute('contenteditable', 'true');
         textDiv.innerText = "New Text (Double-click to delete)";
         textDiv.style.top = '100px'; textDiv.style.left = '50px';
-        textDiv.style.fontSize = '18px'; textDiv.style.backgroundColor = 'white';
-        textDiv.style.padding = '5px 10px'; textDiv.style.border = '1px solid #ccc';
+        textDiv.style.fontSize = '18px'; textDiv.style.backgroundColor = 'transparent';
+        textDiv.style.padding = '5px 10px';
         textDiv.style.zIndex = ++highestZ;
-        
         textDiv.ondblclick = function() { this.remove(); };
         document.getElementById('poster-canvas').appendChild(textDiv);
         makeDraggable(textDiv);
     }
 
-    // --- 6. DRAG ENGINE (Ignores resize corner) ---
+    function addFloatingLine() {
+        const lineContainer = document.createElement('div');
+        lineContainer.className = 'draggable drag-line-container';
+        lineContainer.style.top = '200px';
+        lineContainer.style.left = '100px';
+        lineContainer.style.width = '300px';
+        lineContainer.style.zIndex = ++highestZ;
+        
+        const lineVisual = document.createElement('div');
+        lineVisual.className = 'line-visual';
+        lineVisual.style.borderTop = '3px solid #000000';
+        
+        lineContainer.appendChild(lineVisual);
+        lineContainer.ondblclick = function() { this.remove(); };
+        document.getElementById('poster-canvas').appendChild(lineContainer);
+        makeDraggable(lineContainer);
+    }
+
+    // --- 6. DRAG ENGINE ---
     function makeDraggable(elmnt) {
         var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
         var currentTop = 0, currentLeft = 0;
 
         elmnt.onmousedown = function(e) {
-            // If clicking bottom right 20px, allow native resize, DO NOT drag
+            // Ignore if grabbing resize handle
             if(e.offsetX > elmnt.offsetWidth - 20 && e.offsetY > elmnt.offsetHeight - 20) return;
-            // If typing, DO NOT drag
+            // Ignore if selecting text
             if(e.target.tagName === 'SPAN' || e.target.tagName === 'B' || (e.target.getAttribute('contenteditable') === 'true' && document.activeElement === e.target)) return;
             
             e.preventDefault();
@@ -301,18 +377,13 @@ Jharkhand, 1</textarea>
         }
     }
 
-    // --- 8. MULTI-CHART ENGINE (NEW) ---
+    // --- 8. CHART ENGINE ---
     let myChartInstance = null;
-    
     function saveChartData() {
         const text = document.getElementById('chartDataInput').value;
         const chartType = document.getElementById('chartTypeSelect').value;
         const lines = text.split('\n');
-        
         let newLabels = [], newValues = [];
-        
-        // Remove old floating labels if you switch charts
-        document.querySelectorAll('.drag-label').forEach(el => el.remove());
 
         lines.forEach(line => {
             if(line.includes(',')) {
@@ -323,44 +394,25 @@ Jharkhand, 1</textarea>
         });
 
         const ctx = document.getElementById('myCanvasChart').getContext('2d');
-        
-        // Destroy old chart if it exists
-        if(myChartInstance != null){
-            myChartInstance.destroy();
-        }
+        if(myChartInstance != null) myChartInstance.destroy();
 
         myChartInstance = new Chart(ctx, {
             type: chartType, 
-            data: { 
-                labels: newLabels, 
-                datasets: [{ 
-                    label: 'Patients',
-                    data: newValues, 
-                    backgroundColor: ['#ff7f0e', '#1f77b4', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f'], 
-                    borderWidth: 1 
-                }] 
-            },
-            options: { 
-                responsive: true, 
-                maintainAspectRatio: false, 
-                animation: false, 
-                plugins: { legend: { display: chartType !== 'bar' } } 
-            }
+            data: { labels: newLabels, datasets: [{ label: 'Patients', data: newValues, backgroundColor: ['#ff7f0e', '#1f77b4', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f'], borderWidth: 1 }] },
+            options: { responsive: true, maintainAspectRatio: false, animation: false, plugins: { legend: { display: chartType !== 'bar' } } }
         });
-        
         document.getElementById('chartModal').style.display = 'none';
     }
-    
-    // Initialize chart on load
     saveChartData();
 
-    // --- 9. DOWNLOAD IMAGE ---
+    // --- 9. DOWNLOAD ENGINE ---
     function downloadPoster() {
         const poster = document.getElementById('poster-canvas');
         document.querySelectorAll('[contenteditable="true"]').forEach(el => { el.style.outline = 'none'; el.style.resize = 'none'; });
         document.querySelectorAll('.draggable').forEach(el => { el.style.border = 'none'; });
         document.querySelectorAll('.drag-image-container').forEach(el => el.style.resize = 'none');
         document.querySelectorAll('.chart-wrapper').forEach(el => { el.style.resize = 'none'; el.style.border = 'none'; el.style.background = 'transparent'; });
+        document.querySelectorAll('.drag-line-container').forEach(el => el.style.resize = 'none');
 
         const style = document.createElement('style');
         style.innerHTML = '.draggable:hover::after { display: none !important; }';
@@ -368,15 +420,15 @@ Jharkhand, 1</textarea>
 
         html2canvas(poster, { scale: 2, useCORS: true }).then(canvas => {
             let link = document.createElement('a');
-            link.download = 'Final_Publisher_Layout.png';
+            link.download = 'Design_Studio_Report.png';
             link.href = canvas.toDataURL("image/png");
             link.click();
             
-            // Restore UI Elements
             document.querySelectorAll('[contenteditable="true"]').forEach(el => { el.style.outline = ''; el.style.resize = 'both'; });
             document.querySelectorAll('.draggable').forEach(el => el.style.border = '1px dashed transparent');
             document.querySelectorAll('.drag-image-container').forEach(el => { el.style.border = '2px dashed #aaa'; el.style.resize = 'both'; });
             document.querySelectorAll('.chart-wrapper').forEach(el => { el.style.resize = 'both'; el.style.border = '2px dashed #aaa'; el.style.background = 'rgba(255,255,255,0.5)'; });
+            document.querySelectorAll('.drag-line-container').forEach(el => el.style.resize = 'horizontal');
             document.head.removeChild(style);
         });
     }
