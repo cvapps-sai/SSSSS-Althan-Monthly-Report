@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Trust Report Builder V11 - Flexible Legends</title>
+    <title>Trust Report Builder V12 - Pro Studio</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&family=Montserrat:wght@400;700&family=Oswald:wght@500&family=Pacifico&family=Playfair+Display:ital,wght@0,600;1,600&family=Poppins:wght@400;600&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
@@ -31,31 +31,36 @@
         .canvas-container { box-shadow: 0 10px 30px rgba(0,0,0,0.5); overflow: hidden; background: white;}
         #poster-canvas { width: 900px; height: 1250px; background-color: #fff9eb; position: relative; overflow: hidden; transform-origin: top left; }
         
-        /* Elements */
-        [contenteditable="true"] { outline: 1px solid transparent; transition: outline 0.2s; padding: 4px 8px; border-radius: 4px; cursor: text; display: inline-block; min-width: 20px; box-sizing: border-box; resize: both; overflow: hidden; }
-        [contenteditable="true"]:hover { outline: 1px dashed #8e44ad; }
-        [contenteditable="true"]:focus { outline: 2px solid #8e44ad; background-color: rgba(255,255,255,0.9); }
-
+        /* Draggable Base */
         .draggable { position: absolute; cursor: grab; z-index: 10; border: 1px dashed transparent; transform-origin: center center; }
         .draggable:active { cursor: grabbing; }
-        .draggable:hover::after { content: "↔ Move | ↘ Resize"; position: absolute; top: -15px; left: 0; background: #8e44ad; color: white; font-size: 10px; padding: 2px 6px; border-radius: 10px; pointer-events: none; z-index: 100;}
         
+        /* NEW: Editable Text Behavior */
+        .editable-text { outline: 1px solid transparent; transition: outline 0.2s; padding: 4px 8px; border-radius: 4px; display: inline-block; min-width: 20px; box-sizing: border-box; resize: both; overflow: hidden; }
+        /* When selected but not typing */
+        .editable-text.active-item { outline: 2px dashed #3498db; }
+        /* When double-clicked to type */
+        .editable-text[contenteditable="true"] { outline: 2px solid #8e44ad !important; background-color: rgba(255,255,255,0.9); cursor: text; }
+
         /* Specific Containers */
         .drag-line-container { resize: horizontal; overflow: hidden; display: flex; align-items: center; width: 300px; height: 20px; border: 1px dashed transparent; padding: 0 5px;}
-        .drag-line-container:hover { border: 1px dashed #8e44ad; background: rgba(142,68,173,0.05); }
+        .drag-line-container.active-item { border: 2px dashed #3498db; background: rgba(52, 152, 219, 0.05); }
         .line-visual { width: 100%; border-top: 2px solid black; pointer-events: none; }
 
-        .drag-image-container { resize: both; overflow: hidden; display: flex; justify-content: center; align-items: center; width: 150px; height: 150px; border: 2px dashed #aaa; background: white; }
+        .drag-image-container { resize: both; overflow: hidden; display: flex; justify-content: center; align-items: center; width: 150px; height: 150px; border: 2px dashed transparent; background: transparent; }
+        .drag-image-container.active-item { border: 2px dashed #3498db; }
         .drag-image-container img { width: 100%; height: 100%; object-fit: contain; pointer-events: none; }
         
-        .chart-wrapper { resize: both; overflow: hidden; display: flex; justify-content: center; align-items: center; width: 350px; height: 300px; background: rgba(255,255,255,0.5); border: 2px dashed #aaa; padding: 10px; border-radius: 8px;}
+        .chart-wrapper { resize: both; overflow: hidden; display: flex; justify-content: center; align-items: center; width: 350px; height: 300px; background: rgba(255,255,255,0.5); border: 2px dashed transparent; padding: 10px; border-radius: 8px;}
+        .chart-wrapper.active-item { border: 2px dashed #3498db; }
         .chart-wrapper canvas { width: 100% !important; height: 100% !important; pointer-events: none;}
 
         .data-row { width: 380px; display: flex; justify-content: space-between; font-size: 17px; }
         
         /* Custom Legend Container */
-        .custom-legend { display: flex; align-items: center; background: transparent; padding: 2px 5px; font-size: 14px; font-weight: bold;}
+        .custom-legend-box { display: flex; align-items: center; background: white; padding: 4px 8px; border: 1px solid #ccc; font-weight: bold; border-radius: 4px;}
         .legend-color-box { width: 14px; height: 14px; display: inline-block; margin-right: 8px; border-radius: 3px; border: 1px solid rgba(0,0,0,0.2);}
+        .legend-text { outline: none; border: none; background: transparent; min-width: 50px; display: inline-block;}
 
         #chartModal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); z-index: 1000; width: 320px;}
         #chartModal textarea { width: 100%; height: 150px; margin-bottom: 15px; font-family: monospace; padding: 10px; box-sizing: border-box;}
@@ -71,7 +76,7 @@
             <button onclick="document.getElementById('image-upload').click()">🖼️ Add Photo</button>
             <input type="file" id="image-upload" style="display:none;" accept="image/*" onchange="addDraggableImage(event)">
             <button class="btn-primary" onclick="duplicateActive()">📋 Duplicate</button>
-            <button class="btn-danger" onclick="deleteActive()">🗑️ Delete Item</button>
+            <button class="btn-danger" onclick="deleteActive()" title="Select an item, then click this to delete">🗑️ Delete Item</button>
             <button class="btn-primary" onclick="document.getElementById('chartModal').style.display='block'">📊 Edit Chart</button>
         </div>
         <div class="tool-group">
@@ -130,63 +135,63 @@
 <div class="canvas-container">
     <div id="poster-canvas">
         
-        <div class="draggable" contenteditable="true" style="top: 20px; left: 350px; font-size: 18px; width: 200px; text-align: center; font-family: 'Poppins', sans-serif; font-weight: bold;">AUM SRI SAI RAM</div>
-        <div class="draggable" contenteditable="true" style="top: 50px; left: 150px; font-family: 'Playfair Display', serif; font-size: 38px; font-weight: bold; width: 600px; text-align: center; color: #cc0000;">PRASHANTI CHARITABLE TRUST</div>
-        <div class="draggable" contenteditable="true" style="top: 105px; left: 250px; font-size: 20px; width: 400px; text-align: center; font-family: 'Roboto', sans-serif;">Sri Sathya Sai Seva Samiti, Althan, Surat</div>
+        <div class="draggable editable-text" style="top: 20px; left: 350px; font-size: 18px; width: 200px; text-align: center; font-family: 'Poppins', sans-serif; font-weight: bold;">AUM SRI SAI RAM</div>
+        <div class="draggable editable-text" style="top: 50px; left: 150px; font-family: 'Playfair Display', serif; font-size: 38px; font-weight: bold; width: 600px; text-align: center; color: #cc0000;">PRASHANTI CHARITABLE TRUST</div>
+        <div class="draggable editable-text" style="top: 105px; left: 250px; font-size: 20px; width: 400px; text-align: center; font-family: 'Roboto', sans-serif;">Sri Sathya Sai Seva Samiti, Althan, Surat</div>
 
-        <div class="draggable" contenteditable="true" style="top: 150px; left: 25px; background-color: #cc0000; color: white; width: 850px; text-align: center; padding: 12px; font-size: 22px; font-weight: bold; border-radius: 6px; font-family: 'Montserrat', sans-serif;">Monthly Report February 2026</div>
+        <div class="draggable editable-text" style="top: 150px; left: 25px; background-color: #cc0000; color: white; width: 850px; text-align: center; padding: 12px; font-size: 22px; font-weight: bold; border-radius: 6px; font-family: 'Montserrat', sans-serif;">Monthly Report February 2026</div>
 
-        <div class="draggable" contenteditable="true" style="top: 230px; left: 40px; font-size: 24px; font-weight: bold; color: #512888; width: 380px;">EYE OPD</div>
-        <div class="draggable data-row" contenteditable="true" style="top: 270px; left: 40px;"><span>SESSIONS</span><b>14</b></div>
-        <div class="draggable data-row" contenteditable="true" style="top: 300px; left: 40px;"><span>TOTAL PATIENTS</span><b>580</b></div>
-        <div class="draggable data-row" contenteditable="true" style="top: 330px; left: 40px;"><span>NEW PATIENTS</span><b>329</b></div>
-        <div class="draggable data-row" contenteditable="true" style="top: 360px; left: 40px;"><span>CATARACT DIAGNOSED</span><b>193</b></div>
-        <div class="draggable data-row" contenteditable="true" style="top: 400px; left: 40px; border-top: 2px solid #512888; padding-top: 5px;"><b>Grand total</b><b>1,39,455</b></div>
+        <div class="draggable editable-text" style="top: 230px; left: 40px; font-size: 24px; font-weight: bold; color: #512888; width: 380px;">EYE OPD</div>
+        <div class="draggable editable-text data-row" style="top: 270px; left: 40px;"><span>SESSIONS</span><b>14</b></div>
+        <div class="draggable editable-text data-row" style="top: 300px; left: 40px;"><span>TOTAL PATIENTS</span><b>580</b></div>
+        <div class="draggable editable-text data-row" style="top: 330px; left: 40px;"><span>NEW PATIENTS</span><b>329</b></div>
+        <div class="draggable editable-text data-row" style="top: 360px; left: 40px;"><span>CATARACT DIAGNOSED</span><b>193</b></div>
+        <div class="draggable editable-text data-row" style="top: 400px; left: 40px; border-top: 2px solid #512888; padding-top: 5px;"><b>Grand total</b><b>1,39,455</b></div>
 
-        <div class="draggable" contenteditable="true" style="top: 460px; left: 40px; font-size: 24px; font-weight: bold; color: #d35400; width: 380px;">DENTAL</div>
-        <div class="draggable data-row" contenteditable="true" style="top: 500px; left: 40px;"><span>OPD Sessions</span><b>16</b></div>
-        <div class="draggable data-row" contenteditable="true" style="top: 530px; left: 40px;"><span>OpD patients</span><b>169</b></div>
-        <div class="draggable data-row" contenteditable="true" style="top: 560px; left: 40px;"><span>Extractions</span><b>80</b></div>
-        <div class="draggable data-row" contenteditable="true" style="top: 590px; left: 40px;"><span>Medicines Dispensed</span><b>54</b></div>
-        <div class="draggable data-row" contenteditable="true" style="top: 620px; left: 40px;"><span>Denture Check up</span><b>29</b></div>
-        <div class="draggable data-row" contenteditable="true" style="top: 660px; left: 40px; border-top: 2px solid #d35400; padding-top: 5px;"><b>Grand Total OPD</b><b>69,076</b></div>
-        <div class="draggable data-row" contenteditable="true" style="top: 700px; left: 40px;"><span>Denture Delivered</span><b>05</b></div>
-        <div class="draggable data-row" contenteditable="true" style="top: 730px; left: 40px;"><b>Grand Total Denture Delivered</b><b>2,506</b></div>
+        <div class="draggable editable-text" style="top: 460px; left: 40px; font-size: 24px; font-weight: bold; color: #d35400; width: 380px;">DENTAL</div>
+        <div class="draggable editable-text data-row" style="top: 500px; left: 40px;"><span>OPD Sessions</span><b>16</b></div>
+        <div class="draggable editable-text data-row" style="top: 530px; left: 40px;"><span>OpD patients</span><b>169</b></div>
+        <div class="draggable editable-text data-row" style="top: 560px; left: 40px;"><span>Extractions</span><b>80</b></div>
+        <div class="draggable editable-text data-row" style="top: 590px; left: 40px;"><span>Medicines Dispensed</span><b>54</b></div>
+        <div class="draggable editable-text data-row" style="top: 620px; left: 40px;"><span>Denture Check up</span><b>29</b></div>
+        <div class="draggable editable-text data-row" style="top: 660px; left: 40px; border-top: 2px solid #d35400; padding-top: 5px;"><b>Grand Total OPD</b><b>69,076</b></div>
+        <div class="draggable editable-text data-row" style="top: 700px; left: 40px;"><span>Denture Delivered</span><b>05</b></div>
+        <div class="draggable editable-text data-row" style="top: 730px; left: 40px;"><b>Grand Total Denture Delivered</b><b>2,506</b></div>
 
-        <div class="draggable" contenteditable="true" style="top: 790px; left: 40px; font-size: 24px; font-weight: bold; color: #1e8449; width: 380px;">GENERAL OPD</div>
-        <div class="draggable data-row" contenteditable="true" style="top: 830px; left: 40px;"><span>EYE</span><b>249</b></div>
-        <div class="draggable data-row" contenteditable="true" style="top: 860px; left: 40px;"><span>DENTAL</span><b>22</b></div>
-        <div class="draggable data-row" contenteditable="true" style="top: 890px; left: 40px;"><span>GENERAL</span><b>26</b></div>
-        <div class="draggable data-row" contenteditable="true" style="top: 920px; left: 40px; padding-top: 5px; border-top: 1px dashed #ccc;"><b>TOTAL OPD</b><b>295</b></div>
-        <div class="draggable data-row" contenteditable="true" style="top: 960px; left: 40px; border-top: 2px solid #1e8449; padding-top: 5px;"><b>Grand Total OPD</b><b>1,37,407</b></div>
-        <div class="draggable data-row" contenteditable="true" style="top: 1000px; left: 40px;"><span>High BP</span><b>31</b></div>
-        <div class="draggable data-row" contenteditable="true" style="top: 1030px; left: 40px;"><span>RBS</span><b>31</b></div>
+        <div class="draggable editable-text" style="top: 790px; left: 40px; font-size: 24px; font-weight: bold; color: #1e8449; width: 380px;">GENERAL OPD</div>
+        <div class="draggable editable-text data-row" style="top: 830px; left: 40px;"><span>EYE</span><b>249</b></div>
+        <div class="draggable editable-text data-row" style="top: 860px; left: 40px;"><span>DENTAL</span><b>22</b></div>
+        <div class="draggable editable-text data-row" style="top: 890px; left: 40px;"><span>GENERAL</span><b>26</b></div>
+        <div class="draggable editable-text data-row" style="top: 920px; left: 40px; padding-top: 5px; border-top: 1px dashed #ccc;"><b>TOTAL OPD</b><b>295</b></div>
+        <div class="draggable editable-text data-row" style="top: 960px; left: 40px; border-top: 2px solid #1e8449; padding-top: 5px;"><b>Grand Total OPD</b><b>1,37,407</b></div>
+        <div class="draggable editable-text data-row" style="top: 1000px; left: 40px;"><span>High BP</span><b>31</b></div>
+        <div class="draggable editable-text data-row" style="top: 1030px; left: 40px;"><span>RBS</span><b>31</b></div>
 
-        <div class="draggable" contenteditable="true" style="top: 230px; left: 480px; font-size: 24px; font-weight: bold; color: #1f497d; width: 380px;">EYE OT</div>
-        <div class="draggable data-row" contenteditable="true" style="top: 270px; left: 480px;"><span>OT SESSIONS</span><b>09</b></div>
-        <div class="draggable data-row" contenteditable="true" style="top: 300px; left: 480px;"><span>CATARACT SURGERY</span><b>86</b></div>
+        <div class="draggable editable-text" style="top: 230px; left: 480px; font-size: 24px; font-weight: bold; color: #1f497d; width: 380px;">EYE OT</div>
+        <div class="draggable editable-text data-row" style="top: 270px; left: 480px;"><span>OT SESSIONS</span><b>09</b></div>
+        <div class="draggable editable-text data-row" style="top: 300px; left: 480px;"><span>CATARACT SURGERY</span><b>86</b></div>
         
         <div class="draggable chart-wrapper" style="top: 340px; left: 480px;">
             <canvas id="myCanvasChart"></canvas>
         </div>
 
-        <div class="draggable data-row" contenteditable="true" style="top: 660px; left: 480px; border-top: 2px solid #1f497d; padding-top: 5px;"><b>GRAND TOTAL OT</b><b>15,485</b></div>
+        <div class="draggable editable-text data-row" style="top: 660px; left: 480px; border-top: 2px solid #1f497d; padding-top: 5px;"><b>GRAND TOTAL OT</b><b>15,485</b></div>
 
-        <div class="draggable" contenteditable="true" style="top: 720px; left: 480px; font-size: 24px; font-weight: bold; color: #512888; width: 380px;">Pathological Test</div>
-        <div class="draggable data-row" contenteditable="true" style="top: 760px; left: 480px;"><span>Pre-OP Clinical Test</span><b>68</b></div>
-        <div class="draggable data-row" contenteditable="true" style="top: 800px; left: 480px; border-top: 2px solid #512888; padding-top: 5px;"><b>Grand Total Test</b><b>2,837</b></div>
+        <div class="draggable editable-text" style="top: 720px; left: 480px; font-size: 24px; font-weight: bold; color: #512888; width: 380px;">Pathological Test</div>
+        <div class="draggable editable-text data-row" style="top: 760px; left: 480px;"><span>Pre-OP Clinical Test</span><b>68</b></div>
+        <div class="draggable editable-text data-row" style="top: 800px; left: 480px; border-top: 2px solid #512888; padding-top: 5px;"><b>Grand Total Test</b><b>2,837</b></div>
 
-        <div class="draggable" contenteditable="true" style="top: 860px; left: 480px; font-size: 24px; font-weight: bold; color: #c0392b; width: 380px;">HEARING TEST</div>
-        <div class="draggable data-row" contenteditable="true" style="top: 900px; left: 480px;"><span>Total sessions</span><b>03</b></div>
-        <div class="draggable data-row" contenteditable="true" style="top: 930px; left: 480px;"><span>Monthly OPD</span><b>15</b></div>
-        <div class="draggable data-row" contenteditable="true" style="top: 970px; left: 480px; border-top: 2px solid #c0392b; padding-top: 5px;"><b>Grand Total OPD</b><b>178</b></div>
-        <div class="draggable data-row" contenteditable="true" style="top: 1010px; left: 480px;"><span>ENT reffered</span><b>06</b></div>
-        <div class="draggable data-row" contenteditable="true" style="top: 1040px; left: 480px;"><span>Suggested AID / Amplifier</span><b>02</b></div>
-        <div class="draggable data-row" contenteditable="true" style="top: 1070px; left: 480px;"><span>Amplifier Delivered</span><b>01</b></div>
-        <div class="draggable data-row" contenteditable="true" style="top: 1100px; left: 480px;"><b>TOTAL Amplifier Delivered</b><b>15</b></div>
+        <div class="draggable editable-text" style="top: 860px; left: 480px; font-size: 24px; font-weight: bold; color: #c0392b; width: 380px;">HEARING TEST</div>
+        <div class="draggable editable-text data-row" style="top: 900px; left: 480px;"><span>Total sessions</span><b>03</b></div>
+        <div class="draggable editable-text data-row" style="top: 930px; left: 480px;"><span>Monthly OPD</span><b>15</b></div>
+        <div class="draggable editable-text data-row" style="top: 970px; left: 480px; border-top: 2px solid #c0392b; padding-top: 5px;"><b>Grand Total OPD</b><b>178</b></div>
+        <div class="draggable editable-text data-row" style="top: 1010px; left: 480px;"><span>ENT reffered</span><b>06</b></div>
+        <div class="draggable editable-text data-row" style="top: 1040px; left: 480px;"><span>Suggested AID / Amplifier</span><b>02</b></div>
+        <div class="draggable editable-text data-row" style="top: 1070px; left: 480px;"><span>Amplifier Delivered</span><b>01</b></div>
+        <div class="draggable editable-text data-row" style="top: 1100px; left: 480px;"><b>TOTAL Amplifier Delivered</b><b>15</b></div>
 
-        <div class="draggable" contenteditable="true" style="top: 1150px; left: 40px; color: #1e8449; font-weight: bold; width: 400px; font-size: 18px;">Monthly Narayan Seva: 750 | Grand Total: 5,654</div>
-        <div class="draggable" contenteditable="true" style="top: 1150px; left: 480px; color: #cc0000; font-weight: bold; width: 400px; font-size: 18px;">Blood Donation Camps: 07 | Total Blood Units: 204</div>
+        <div class="draggable editable-text" style="top: 1150px; left: 40px; color: #1e8449; font-weight: bold; width: 400px; font-size: 18px;">Monthly Narayan Seva: 750 | Grand Total: 5,654</div>
+        <div class="draggable editable-text" style="top: 1150px; left: 480px; color: #cc0000; font-weight: bold; width: 400px; font-size: 18px;">Blood Donation Camps: 07 | Total Blood Units: 204</div>
         
     </div>
 </div>
@@ -221,25 +226,27 @@ JHARKHAND, 01</textarea>
     let highestZ = 100; 
 
     // Initialize all existing draggables
-    document.querySelectorAll('.draggable').forEach(el => {
-        makeDraggable(el);
-        // Double click fallback (disabled for text formatting clicks)
-        el.addEventListener('dblclick', function(e) {
-            if(e.target.tagName === 'SPAN' || e.target.tagName === 'B') return; 
-            if(e.target.getAttribute('contenteditable') === 'true' && document.activeElement === e.target) return;
-            this.remove();
-        });
+    document.querySelectorAll('.draggable').forEach(makeDraggable);
+
+    // --- 1. DOUBLE CLICK TO EDIT TEXT (NEW) ---
+    document.addEventListener('dblclick', function(e) {
+        let textNode = e.target.closest('.editable-text');
+        let legendText = e.target.closest('.legend-text');
+        
+        if(textNode && !legendText) {
+            textNode.setAttribute('contenteditable', 'true');
+            textNode.focus();
+        } else if (legendText) {
+            legendText.setAttribute('contenteditable', 'true');
+            legendText.focus();
+        }
     });
 
-    // --- 1. PAGE SETUP ---
-    function changePageSize() {
-        const sizes = document.getElementById('pageSetup').value.split(',');
-        const canvas = document.getElementById('poster-canvas');
-        canvas.style.width = sizes[0] + 'px';
-        canvas.style.height = sizes[1] + 'px';
+    // --- 2. SELECTION ENGINE (UPDATED) ---
+    function clearActiveStyles() {
+        document.querySelectorAll('.active-item').forEach(el => el.classList.remove('active-item'));
     }
 
-    // --- 2. SELECTION ENGINE ---
     function rgbToHex(col) {
         if(col.charAt(0)=='r') {
             col=col.replace('rgb(','').replace('rgba(','').replace(')','').split(',');
@@ -249,18 +256,37 @@ JHARKHAND, 01</textarea>
     }
 
     document.addEventListener('mousedown', function(e) {
+        // TURN OFF EDITING MODE IF CLICKING AWAY
+        document.querySelectorAll('[contenteditable="true"]').forEach(el => {
+            if(el !== e.target && !el.contains(e.target)) {
+                el.removeAttribute('contenteditable');
+                window.getSelection().removeAllRanges();
+            }
+        });
+
+        // 1. Establish what was clicked
         let dragged = e.target.closest('.draggable');
+        if(!dragged && !e.target.closest('.controls') && !e.target.closest('#chartModal')) {
+            // Clicked empty canvas space
+            clearActiveStyles();
+            activeDraggable = null; activeElement = null; activeLine = null;
+            document.getElementById('active-status').innerText = "Select Item 👉";
+            return;
+        }
+
         if(dragged) {
+            clearActiveStyles();
+            dragged.classList.add('active-item');
             activeDraggable = dragged;
             activeDraggable.style.zIndex = ++highestZ;
             let currentRot = activeDraggable.getAttribute('data-rotation') || '0';
             document.getElementById('rotationPicker').value = currentRot;
         }
 
-        // Clicked Text Box (Includes our new Custom Legends)
-        let editableTarget = e.target.closest('[contenteditable="true"]');
-        if(editableTarget) {
-            activeElement = editableTarget;
+        // 2. Toolbar logic for Text
+        let isText = e.target.closest('.editable-text') || e.target.closest('.custom-legend-box');
+        if(isText) {
+            activeElement = isText;
             activeLine = null;
             
             document.getElementById('active-status').innerText = "Text Selected";
@@ -277,7 +303,7 @@ JHARKHAND, 01</textarea>
             document.getElementById('textBgColorPicker').value = rgbToHex(compStyle.backgroundColor) === 'transparent' ? '#ffffff' : rgbToHex(compStyle.backgroundColor);
         }
         
-        // Clicked Line
+        // 3. Toolbar logic for Lines
         else if(e.target.closest('.drag-line-container')) {
             activeLine = e.target.closest('.drag-line-container').querySelector('.line-visual');
             activeElement = null;
@@ -294,10 +320,23 @@ JHARKHAND, 01</textarea>
             document.getElementById('primaryColorPicker').value = rgbToHex(compStyle.borderTopColor);
             document.getElementById('lineThicknessPicker').value = parseInt(compStyle.borderTopWidth);
             document.getElementById('lineStylePicker').value = compStyle.borderTopStyle;
+        } 
+        else if (dragged) {
+            // It's an image or chart
+            activeElement = null; activeLine = null;
+            document.getElementById('active-status').innerText = "Graphic Selected";
         }
     });
 
-    // --- 3. FORMATTING ENGINE ---
+    // --- 3. PAGE SETUP ---
+    function changePageSize() {
+        const sizes = document.getElementById('pageSetup').value.split(',');
+        const canvas = document.getElementById('poster-canvas');
+        canvas.style.width = sizes[0] + 'px';
+        canvas.style.height = sizes[1] + 'px';
+    }
+
+    // --- 4. FORMATTING ENGINE ---
     function updateRotation() {
         if(!activeDraggable) return;
         let deg = document.getElementById('rotationPicker').value;
@@ -330,38 +369,38 @@ JHARKHAND, 01</textarea>
         }
     }
 
-    // --- 4. ITEM MANAGEMENT ---
+    // --- 5. ITEM MANAGEMENT (DELETE ONLY VIA BUTTON NOW) ---
     function deleteActive() {
-        if(!activeDraggable) { alert("Select an item first to delete it."); return; }
+        if(!activeDraggable) { alert("Click an item to select it, then press Delete."); return; }
         activeDraggable.remove();
         activeDraggable = null; activeElement = null; activeLine = null;
+        document.getElementById('active-status').innerText = "Select Item 👉";
     }
 
     function duplicateActive() {
-        if(!activeDraggable) { alert("Select an item first to duplicate it."); return; }
+        if(!activeDraggable) { alert("Click an item first to duplicate it."); return; }
         let clone = activeDraggable.cloneNode(true);
         let currentTop = parseInt(clone.style.top) || 0;
         let currentLeft = parseInt(clone.style.left) || 0;
         clone.style.top = (currentTop + 30) + 'px';
         clone.style.left = (currentLeft + 30) + 'px';
         clone.style.zIndex = ++highestZ;
+        clone.classList.remove('active-item'); // Don't highlight clone initially
+        clone.removeAttribute('contenteditable'); // Ensure clone isn't in edit mode
         
-        clone.addEventListener('dblclick', function(e) { if(e.target.tagName === 'SPAN' || e.target.tagName === 'B') return; this.remove(); });
         document.getElementById('poster-canvas').appendChild(clone);
         makeDraggable(clone);
     }
 
-    // --- 5. CREATION TOOLS ---
+    // --- 6. CREATION TOOLS ---
     function addFloatingText() {
         const textDiv = document.createElement('div');
-        textDiv.className = 'draggable';
-        textDiv.setAttribute('contenteditable', 'true');
-        textDiv.innerText = "New Text";
+        textDiv.className = 'draggable editable-text';
+        textDiv.innerText = "New Text (Double-click to type)";
         textDiv.style.top = '100px'; textDiv.style.left = '50px';
         textDiv.style.fontSize = '18px'; textDiv.style.backgroundColor = 'transparent';
-        textDiv.style.padding = '5px 10px';
         textDiv.style.zIndex = ++highestZ;
-        textDiv.addEventListener('dblclick', function(e) { if(e.target.tagName === 'SPAN' || e.target.tagName === 'B') return; this.remove(); });
+        
         document.getElementById('poster-canvas').appendChild(textDiv);
         makeDraggable(textDiv);
     }
@@ -376,7 +415,6 @@ JHARKHAND, 01</textarea>
         lineVisual.className = 'line-visual'; lineVisual.style.borderTop = '3px solid #000000';
         
         lineContainer.appendChild(lineVisual);
-        lineContainer.addEventListener('dblclick', function() { this.remove(); });
         document.getElementById('poster-canvas').appendChild(lineContainer);
         makeDraggable(lineContainer);
     }
@@ -392,7 +430,6 @@ JHARKHAND, 01</textarea>
                 imgContainer.style.zIndex = ++highestZ;
                 const img = document.createElement('img');
                 img.src = e.target.result;
-                imgContainer.addEventListener('dblclick', function() { this.remove(); });
                 
                 imgContainer.appendChild(img);
                 document.getElementById('poster-canvas').appendChild(imgContainer);
@@ -402,14 +439,16 @@ JHARKHAND, 01</textarea>
         }
     }
 
-    // --- 6. DRAG ENGINE ---
+    // --- 7. DRAG ENGINE ---
     function makeDraggable(elmnt) {
         var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
         var currentTop = 0, currentLeft = 0;
 
         elmnt.onmousedown = function(e) {
+            // Ignore resize handle
             if(e.offsetX > elmnt.offsetWidth - 20 && e.offsetY > elmnt.offsetHeight - 20) return;
-            if(e.target.tagName === 'SPAN' || e.target.tagName === 'B' || (e.target.getAttribute('contenteditable') === 'true' && document.activeElement === e.target)) return;
+            // Ignore if currently typing inside it
+            if(elmnt.getAttribute('contenteditable') === 'true' || (e.target.tagName === 'SPAN' && e.target.getAttribute('contenteditable') === 'true')) return;
             
             e.preventDefault();
             pos3 = e.clientX; pos4 = e.clientY;
@@ -426,7 +465,7 @@ JHARKHAND, 01</textarea>
         };
     }
 
-    // --- 7. CHART ENGINE (NOW WITH CUSTOM LEGENDS) ---
+    // --- 8. CHART ENGINE (CUSTOM LEGENDS) ---
     let myChartInstance = null;
     const chartColors = ['#ff7f0e', '#1f77b4', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f'];
 
@@ -436,7 +475,6 @@ JHARKHAND, 01</textarea>
         const lines = text.split('\n');
         let newLabels = [], newValues = [];
 
-        // 1. Remove old custom legends
         document.querySelectorAll('.custom-legend-box').forEach(el => el.remove());
 
         lines.forEach((line, index) => {
@@ -447,36 +485,28 @@ JHARKHAND, 01</textarea>
                 newLabels.push(labelText);
                 newValues.push(labelValue);
 
-                // 2. Spawn completely independent Custom Legend Draggable for each state
                 const legendDiv = document.createElement('div');
                 legendDiv.className = 'draggable custom-legend-box';
                 legendDiv.style.top = (330 + (index * 35)) + 'px'; 
                 legendDiv.style.left = '850px';
-                legendDiv.style.display = 'flex';
-                legendDiv.style.alignItems = 'center';
                 legendDiv.style.zIndex = ++highestZ;
 
-                // Color Square
                 const colorSquare = document.createElement('span');
                 colorSquare.className = 'legend-color-box';
                 colorSquare.style.backgroundColor = chartColors[index % chartColors.length];
                 
-                // Editable Text Area
                 const textSpan = document.createElement('span');
-                textSpan.setAttribute('contenteditable', 'true');
+                textSpan.className = 'legend-text';
                 textSpan.innerText = `${labelText}: ${labelValue}`;
 
                 legendDiv.appendChild(colorSquare);
                 legendDiv.appendChild(textSpan);
 
-                // Setup drag and delete
-                legendDiv.addEventListener('dblclick', function(e) { if(e.target.tagName === 'SPAN' && e.target.getAttribute('contenteditable') === 'true') return; this.remove(); });
                 document.getElementById('poster-canvas').appendChild(legendDiv);
                 makeDraggable(legendDiv);
             }
         });
 
-        // 3. Render Chart WITHOUT default legend
         const ctx = document.getElementById('myCanvasChart').getContext('2d');
         if(myChartInstance != null) myChartInstance.destroy();
 
@@ -488,16 +518,17 @@ JHARKHAND, 01</textarea>
         document.getElementById('chartModal').style.display = 'none';
     }
     
-    // Render the initial chart
     saveChartData();
 
-    // --- 8. DOWNLOAD ENGINE ---
+    // --- 9. DOWNLOAD ENGINE ---
     function downloadPoster() {
         const poster = document.getElementById('poster-canvas');
-        document.querySelectorAll('[contenteditable="true"]').forEach(el => { el.style.outline = 'none'; el.style.resize = 'none'; });
-        document.querySelectorAll('.draggable').forEach(el => { el.style.border = 'none'; });
+        clearActiveStyles(); // Remove blue selection boxes
+        
+        // Disable UI elements for screenshot
+        document.querySelectorAll('.editable-text').forEach(el => { el.removeAttribute('contenteditable'); el.style.resize = 'none'; });
         document.querySelectorAll('.drag-image-container').forEach(el => el.style.resize = 'none');
-        document.querySelectorAll('.chart-wrapper').forEach(el => { el.style.resize = 'none'; el.style.border = 'none'; el.style.background = 'transparent'; });
+        document.querySelectorAll('.chart-wrapper').forEach(el => { el.style.resize = 'none'; });
         document.querySelectorAll('.drag-line-container').forEach(el => el.style.resize = 'none');
 
         const style = document.createElement('style');
@@ -506,15 +537,14 @@ JHARKHAND, 01</textarea>
 
         html2canvas(poster, { scale: 2, useCORS: true }).then(canvas => {
             let link = document.createElement('a');
-            link.download = 'Flexible_Legends_Report.png';
+            link.download = 'Professional_Studio_Report.png';
             link.href = canvas.toDataURL("image/png");
             link.click();
             
             // Restore UI Elements
-            document.querySelectorAll('[contenteditable="true"]').forEach(el => { el.style.outline = ''; el.style.resize = 'both'; });
-            document.querySelectorAll('.draggable').forEach(el => el.style.border = '1px dashed transparent');
-            document.querySelectorAll('.drag-image-container').forEach(el => { el.style.border = '2px dashed #aaa'; el.style.resize = 'both'; });
-            document.querySelectorAll('.chart-wrapper').forEach(el => { el.style.resize = 'both'; el.style.border = '2px dashed #aaa'; el.style.background = 'rgba(255,255,255,0.5)'; });
+            document.querySelectorAll('.editable-text').forEach(el => { el.style.resize = 'both'; });
+            document.querySelectorAll('.drag-image-container').forEach(el => { el.style.resize = 'both'; });
+            document.querySelectorAll('.chart-wrapper').forEach(el => { el.style.resize = 'both'; });
             document.querySelectorAll('.drag-line-container').forEach(el => el.style.resize = 'horizontal');
             document.head.removeChild(style);
         });
