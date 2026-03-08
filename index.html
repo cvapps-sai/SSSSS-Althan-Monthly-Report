@@ -2,39 +2,397 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Trust Report Builder V5 - Canva Style</title>
+    <title>Trust Report Builder V6 - Ultimate Freedom</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body { font-family: Arial, sans-serif; background-color: #f0f2f5; display: flex; flex-direction: column; align-items: center; padding: 20px; margin: 0; color: #333; }
         
-        /* The Canva-Style Toolbar */
+        /* The Toolbar */
         .controls { background: white; padding: 15px 25px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 8px 25px rgba(0,0,0,0.1); width: 900px; display: flex; flex-direction: column; gap: 15px; z-index: 100; border: 1px solid #e1e4e8;}
         .toolbar-row { display: flex; justify-content: space-between; align-items: center; }
-        .tool-group { display: flex; align-items: center; gap: 10px; }
-        .tool-divider { width: 1px; height: 30px; background-color: #ddd; margin: 0 5px; }
+        .tool-group { display: flex; align-items: center; gap: 8px; }
         
-        button { background-color: #f1f3f4; color: #3c4043; border: 1px solid #dadce0; padding: 8px 15px; font-size: 14px; font-weight: bold; border-radius: 6px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 5px; }
+        button { background-color: #f1f3f4; color: #3c4043; border: 1px solid #dadce0; padding: 8px 12px; font-size: 14px; font-weight: bold; border-radius: 6px; cursor: pointer; transition: 0.2s; }
         button:hover { background-color: #e8eaed; }
-        .btn-primary { background-color: #8e44ad; color: white; border: none; }
-        .btn-primary:hover { background-color: #9b59b6; }
-        .btn-success { background-color: #27ae60; color: white; border: none; font-size: 16px; padding: 10px 20px;}
+        .btn-success { background-color: #27ae60; color: white; border: none; font-size: 15px; padding: 10px 15px;}
         .btn-success:hover { background-color: #2ecc71; }
+        .btn-duplicate { background-color: #3498db; color: white; border: none; }
+        .btn-duplicate:hover { background-color: #2980b9; }
         
-        input[type="color"] { cursor: pointer; border: none; width: 35px; height: 35px; padding: 0; border-radius: 6px; overflow: hidden; }
-        select, input[type="number"] { padding: 8px; border: 1px solid #dadce0; border-radius: 6px; font-size: 14px; background: #f8f9fa; }
+        input[type="color"] { cursor: pointer; border: none; width: 30px; height: 30px; padding: 0; border-radius: 6px; overflow: hidden; }
+        select, input[type="number"] { padding: 6px; border: 1px solid #dadce0; border-radius: 6px; font-size: 13px; background: #f8f9fa; }
 
         /* The Poster Canvas */
-        #poster-canvas { width: 900px; min-height: 1200px; background-color: #fff9eb; border: 1px solid #ccc; padding: 40px; box-sizing: border-box; position: relative; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        #poster-canvas { width: 900px; height: 1250px; background-color: #fff9eb; border: 1px solid #ccc; box-sizing: border-box; position: relative; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
         
-        /* Editable Text & Floating Elements */
-        [contenteditable="true"] { outline: 1px solid transparent; transition: all 0.2s; padding: 2px 4px; border-radius: 4px; cursor: text; display: inline-block; min-width: 20px;}
-        [contenteditable="true"]:hover { outline: 1px dashed #8e44ad; background-color: rgba(142, 68, 173, 0.05); }
-        [contenteditable="true"]:focus { outline: 2px solid #8e44ad; background-color: #fff; }
+        /* Editable Elements */
+        [contenteditable="true"] { outline: 1px solid transparent; transition: all 0.2s; padding: 4px; border-radius: 4px; cursor: text; display: inline-block; min-width: 20px; }
+        [contenteditable="true"]:hover { outline: 1px dashed #8e44ad; }
+        [contenteditable="true"]:focus { outline: 2px solid #8e44ad; background-color: rgba(255,255,255,0.9); }
 
-        .draggable { position: absolute; cursor: grab; z-index: 50; }
-        .draggable:hover::after { content: "↔ Drag"; position: absolute; top: -20px; right: 0; background: #8e44ad; color: white; font-size: 10px; padding: 2px 6px; border-radius: 10px; pointer-events: none; }
-        .draggable:active { cursor: grabbing; }
+        /* Free-Form Draggable Blocks */
+        .draggable { position: absolute; cursor: grab; z-index: 10; padding: 5px; border: 1px dashed transparent; border-radius: 8px; }
+        .draggable:hover { border: 1px dashed #bdc3c7; background: rgba(0,0,0,0.02); }
+        .draggable:active { cursor: grabbing; z-index: 50; }
+        .draggable:hover::after { content: "↔ Move"; position: absolute; top: -15px; left: 0; background: #8e44ad; color: white; font-size: 10px; padding: 2px 6px; border-radius: 10px; pointer-events: none; }
+        
+        /* Specific Block Styles */
+        .block-section { width: 380px; }
+        .block-banner { width: 850px; background-color: #cc0000; color: white; text-align: center; padding: 12px; font-size: 22px; font-weight: bold; border-radius: 6px; }
+        .block-header { width: 500px; text-align: center; }
+        .block-footer { width: 850px; text-align: center; border-top: 2px solid #ccc; padding-top: 15px; font-weight: bold; line-height: 1.6; }
+        
+        .drag-image-container { resize: both; overflow: hidden; display: flex; justify-content: center; align-items: center; width: 150px; height: 150px; border: 2px dashed #aaa; background: white; }
+        .drag-image-container img { width: 100%; height: 100%; object-fit: contain; pointer-events: none; }
+        
+        /* Typography inside blocks */
+        .section-title { font-size: 24px; font-weight: bold; margin-bottom: 10px; border-bottom: 2px dashed #ccc; padding-bottom: 5px; }
+        .row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 17px; }
+        .bold { font-weight: bold; }
+        .chart-wrapper { display: flex; justify-content: center; align-items: center; height: 250px; margin: 20px 0; }
+
+        #chartModal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 25px; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); z-index: 1000;}
+        #chartModal textarea { width: 300px; height: 150px; margin-bottom: 15px; font-family: monospace; padding: 10px;}
+    </style>
+</head>
+<body>
+
+<div class="controls" id="hide-controls">
+    <div class="toolbar-row">
+        <div class="tool-group">
+            <button onclick="addFloatingText()">➕ Add Text Box</button>
+            <button onclick="document.getElementById('image-upload').click()">🖼️ Add Photo</button>
+            <input type="file" id="image-upload" style="display:none;" accept="image/*" onchange="addDraggableImage(event)">
+            <button class="btn-duplicate" onclick="duplicateActive()">📋 Duplicate Selected</button>
+            <button onclick="document.getElementById('chartModal').style.display='block'">📊 Edit Pie Chart</button>
+        </div>
+        <div class="tool-group">
+            <span style="font-size: 13px; font-weight:bold;">Poster Background:</span>
+            <input type="color" id="bgColorPicker" value="#fff9eb" onchange="document.getElementById('poster-canvas').style.backgroundColor = this.value">
+        </div>
+    </div>
+    
+    <div class="toolbar-row" style="background: #f8f9fa; padding: 10px; border-radius: 8px; border: 1px solid #e1e4e8;">
+        <div class="tool-group">
+            <span id="active-status" style="font-size: 13px; font-weight: bold; color: #8e44ad;">Select Text to Edit 👉</span>
+            
+            <span style="font-size: 12px; margin-left: 10px;">Text Color:</span>
+            <input type="color" id="textColorPicker" onchange="updateActiveText('color')">
+            
+            <span style="font-size: 12px;">Text BG:</span>
+            <input type="color" id="textBgColorPicker" value="#ffffff" onchange="updateActiveText('backgroundColor')">
+            
+            <select id="fontFamilyPicker" onchange="updateActiveText('fontFamily')">
+                <option value="Arial">Arial</option>
+                <option value="'Times New Roman'">Times New Roman</option>
+                <option value="'Courier New'">Courier</option>
+                <option value="Georgia">Georgia</option>
+                <option value="Verdana">Verdana</option>
+            </select>
+            <input type="number" id="fontSizePicker" style="width: 50px;" placeholder="Size" onchange="updateActiveText('fontSize')">
+        </div>
+        <button class="btn-success" onclick="downloadPoster()">⬇️ Download Image</button>
+    </div>
+</div>
+
+<div id="poster-canvas">
+    
+    <div class="draggable block-header" style="top: 30px; left: 200px;">
+        <div contenteditable="true" style="font-size: 18px;">AUM SRI SAI RAM</div><br>
+        <div contenteditable="true" style="font-family: 'Times New Roman'; font-size: 34px; font-weight: bold; margin: 5px 0;">PRASHANTI CHARITABLE TRUST</div><br>
+        <div contenteditable="true" style="font-size: 20px;">Sri Sathya Sai Seva Samiti, Althan, Surat</div>
+    </div>
+
+    <div class="draggable block-banner" style="top: 150px; left: 25px;">
+        <div contenteditable="true">Monthly Report February 2026</div>
+        <div contenteditable="true" style="color: #ffcccc; font-size: 16px; margin-top:5px; background-color: transparent;">Celebrating Centenary of Bhagawan Sri Sathya Sai Baba</div>
+    </div>
+
+    <div class="draggable block-section" style="top: 250px; left: 40px;">
+        <div class="section-title" style="color:#512888" contenteditable="true">Eye OPD</div>
+        <div class="row"><span contenteditable="true">OPD Sessions</span><span contenteditable="true" class="bold">14</span></div>
+        <div class="row"><span contenteditable="true">Total Patients</span><span contenteditable="true" class="bold">580</span></div>
+        <div class="row"><span contenteditable="true">New Patients</span><span contenteditable="true" class="bold">329</span></div>
+        <div class="row"><span contenteditable="true">Cataract Diagnosed</span><span contenteditable="true" class="bold">193</span></div>
+        <div class="row" style="margin-top: 10px; border-top:1px solid #ddd; padding-top:5px;">
+            <span class="bold" contenteditable="true">Grand Total OPD</span><span contenteditable="true" class="bold">1,39,455</span>
+        </div>
+    </div>
+
+    <div class="draggable block-section" style="top: 500px; left: 40px;">
+        <div class="section-title" style="color:#d35400" contenteditable="true">Dental OPD</div>
+        <div class="row"><span contenteditable="true">OPD Sessions</span><span contenteditable="true" class="bold">16</span></div>
+        <div class="row"><span contenteditable="true">Total OPD Patients</span><span contenteditable="true" class="bold">169</span></div>
+        <div class="row"><span contenteditable="true">Tooth Extractions</span><span contenteditable="true" class="bold">80</span></div>
+        <div class="row"><span contenteditable="true">Medicine Dispensed</span><span contenteditable="true" class="bold">54</span></div>
+        <div class="row"><span contenteditable="true">Denture check-up</span><span contenteditable="true" class="bold">29</span></div>
+        <div class="row" style="margin-top: 10px; border-top:1px solid #ddd; padding-top:5px;"><span class="bold" contenteditable="true">Grand Total OPD</span><span contenteditable="true" class="bold">69,076</span></div>
+        <div class="row" style="margin-top: 15px;"><span contenteditable="true">Denture Delivered</span><span contenteditable="true" class="bold">05</span></div>
+        <div class="row"><span class="bold" contenteditable="true">Total Denture Delivered</span><span contenteditable="true" class="bold">2,506</span></div>
+    </div>
+    
+    <div class="draggable block-section" style="top: 840px; left: 40px;">
+        <div class="section-title" style="color:#1e8449" contenteditable="true">General OPD</div>
+        <div class="row"><span contenteditable="true">Eye</span><span contenteditable="true" class="bold">249</span></div>
+        <div class="row"><span contenteditable="true">Dental</span><span contenteditable="true" class="bold">22</span></div>
+        <div class="row"><span contenteditable="true">General</span><span contenteditable="true" class="bold">26</span></div>
+        <div class="row" style="border-top:1px solid #ddd; padding-top:5px;"><span class="bold" contenteditable="true">Total OPD</span><span contenteditable="true" class="bold">295</span></div>
+        <div class="row" style="margin-top: 15px;"><span contenteditable="true">High Blood Pressure</span><span contenteditable="true" class="bold">31</span></div>
+        <div class="row"><span contenteditable="true">Random Blood Sugar</span><span contenteditable="true" class="bold">31</span></div>
+        <div class="row" style="margin-top: 10px; border-top:1px solid #ddd; padding-top:5px;"><span class="bold" contenteditable="true">Grand total:</span><span contenteditable="true" class="bold">1,37,407</span></div>
+    </div>
+
+    <div class="draggable block-section" style="top: 250px; left: 480px;">
+        <div class="section-title" style="color:#1f497d" contenteditable="true">Eye Cataract Operations</div>
+        <div class="row"><span contenteditable="true">OT Sessions</span><span contenteditable="true" class="bold">09</span></div>
+        <div class="row"><span class="bold" contenteditable="true">Monthly Cataract Surgery</span><span contenteditable="true" class="bold">86</span></div>
+        
+        <div class="chart-wrapper"><canvas id="myPieChart"></canvas></div>
+
+        <div class="row" style="margin-top: 10px; border-top:1px solid #ddd; padding-top:5px;">
+            <span class="bold" contenteditable="true">Grand Total Cataract Surgeries</span><span contenteditable="true" class="bold">15,485</span>
+        </div>
+    </div>
+
+    <div class="draggable block-section" style="top: 720px; left: 480px;">
+        <div class="section-title" style="color:#512888" contenteditable="true">Pathological Test</div>
+        <div class="row"><span contenteditable="true">Pre-Operation Clinical Test:</span><span contenteditable="true" class="bold">68</span></div>
+        <div class="row" style="margin-top: 10px; border-top:1px solid #ddd; padding-top:5px;">
+            <span class="bold" contenteditable="true">Grand Total</span><span contenteditable="true" class="bold">2,837</span>
+        </div>
+    </div>
+
+    <div class="draggable block-section" style="top: 860px; left: 480px;">
+        <div class="section-title" style="color:#c0392b" contenteditable="true">Hearing Test</div>
+        <div class="row"><span contenteditable="true">Total Sessions</span><span contenteditable="true" class="bold">03</span></div>
+        <div class="row"><span contenteditable="true">Monthly OPD</span><span contenteditable="true" class="bold">15</span></div>
+        <div class="row" style="border-top:1px solid #ddd; padding-top:5px;"><span class="bold" contenteditable="true">Grand Total OPD</span><span contenteditable="true" class="bold">178</span></div>
+        <div class="row" style="margin-top: 10px;"><span contenteditable="true">Referred to ENT</span><span contenteditable="true" class="bold">06</span></div>
+        <div class="row"><span contenteditable="true">Suggested AID</span><span contenteditable="true" class="bold">02</span></div>
+        <div class="row"><span contenteditable="true">Amplifier Delivered</span><span contenteditable="true" class="bold">01</span></div>
+        <div class="row"><span class="bold" contenteditable="true">TOTAL Amplifier Delivered</span><span contenteditable="true" class="bold">15</span></div>
+    </div>
+
+    <div class="draggable block-footer" style="top: 1120px; left: 25px;">
+        <div style="color: #512888; margin-bottom: 5px;" contenteditable="true">Blood Donation Camps: 07 | Total Blood Units Collected: 204</div>
+        <div style="color: #1e8449; margin-bottom: 5px;" contenteditable="true">Monthly Narayan Seva: 750 | Grand Total: 5,654</div>
+        <div style="color: #cc0000; margin-bottom: 5px; margin-top: 10px;" contenteditable="true">ALL OFFERED AT ABSOLUTELY FREE OF COST</div>
+        <div style="color: #1f497d; font-size: 20px;" contenteditable="true">Samastha Lokah Sukhino Bhavantu</div>
+    </div>
+</div>
+
+<div id="chartModal">
+    <h3 style="margin-top:0;">Edit Chart Data</h3>
+    <textarea id="chartDataInput">Gujarat, 61
+Maharashtra, 11
+Uttar Pradesh, 6
+Bihar, 3
+Odisha, 2
+Madhya Pradesh, 1
+Rajasthan, 1
+Jharkhand, 1</textarea><br>
+    <button class="btn-success" onclick="saveChartData()" style="width: 100%; margin-bottom: 10px;">Save Data</button>
+    <button onclick="document.getElementById('chartModal').style.display='none'" style="width: 100%;">Cancel</button>
+</div>
+
+<script>
+    let activeElement = null; // The text we are typing in
+    let activeDraggable = null; // The block we clicked to move/copy
+
+    // Set up dragging for all existing blocks immediately
+    document.querySelectorAll('.draggable').forEach(makeDraggable);
+
+    // --- 1. SELECTION ENGINE ---
+    document.addEventListener('mousedown', function(e) {
+        // Find which block we clicked for Copy/Paste
+        if(e.target.closest('.draggable')) {
+            activeDraggable = e.target.closest('.draggable');
+        }
+
+        // Find which text we clicked for formatting
+        if(e.target.getAttribute('contenteditable') === 'true') {
+            activeElement = e.target;
+            document.getElementById('active-status').innerText = "Text Selected!";
+            
+            let compStyle = window.getComputedStyle(activeElement);
+            document.getElementById('fontFamilyPicker').value = compStyle.fontFamily.replace(/"/g, '');
+            document.getElementById('fontSizePicker').value = parseInt(compStyle.fontSize) || 16;
+            
+            // Extract Hex from RGB
+            function rgbToHex(col) {
+                if(col.charAt(0)=='r') {
+                    col=col.replace('rgb(','').replace('rgba(','').replace(')','').split(',');
+                    let r=parseInt(col[0], 10).toString(16), g=parseInt(col[1], 10).toString(16), b=parseInt(col[2], 10).toString(16);
+                    return "#"+(r.length==1?"0"+r:r)+(g.length==1?"0"+g:g)+(b.length==1?"0"+b:b);
+                } return col;
+            }
+            document.getElementById('textColorPicker').value = rgbToHex(compStyle.color);
+            document.getElementById('textBgColorPicker').value = rgbToHex(compStyle.backgroundColor) === 'transparent' ? '#ffffff' : rgbToHex(compStyle.backgroundColor);
+        }
+    });
+
+    // --- 2. FORMATTING ENGINE ---
+    function updateActiveText(property) {
+        if(!activeElement) return;
+        if(property === 'color') activeElement.style.color = document.getElementById('textColorPicker').value;
+        if(property === 'backgroundColor') activeElement.style.backgroundColor = document.getElementById('textBgColorPicker').value;
+        if(property === 'fontFamily') activeElement.style.fontFamily = document.getElementById('fontFamilyPicker').value;
+        if(property === 'fontSize') activeElement.style.fontSize = document.getElementById('fontSizePicker').value + 'px';
+    }
+
+    // --- 3. DUPLICATE FEATURE ---
+    function duplicateActive() {
+        if(!activeDraggable) { alert("Click a text box, section, or photo first to duplicate it."); return; }
+        
+        // Clone the item
+        let clone = activeDraggable.cloneNode(true);
+        
+        // Shift it down and right slightly so it doesn't hide behind the original
+        let currentTop = parseInt(clone.style.top) || 0;
+        let currentLeft = parseInt(clone.style.left) || 0;
+        clone.style.top = (currentTop + 30) + 'px';
+        clone.style.left = (currentLeft + 30) + 'px';
+        
+        // Allow deletion of the clone via double-click
+        clone.ondblclick = function() { this.remove(); };
+        
+        document.getElementById('poster-canvas').appendChild(clone);
+        makeDraggable(clone); // Make the clone movable
+    }
+
+    // --- 4. ADD NEW TEXT BOX ---
+    function addFloatingText() {
+        const textDiv = document.createElement('div');
+        textDiv.className = 'draggable';
+        textDiv.setAttribute('contenteditable', 'true');
+        textDiv.innerText = "New Text Box";
+        textDiv.style.top = '100px';
+        textDiv.style.left = '50px';
+        textDiv.style.fontSize = '20px';
+        textDiv.style.backgroundColor = 'white';
+        textDiv.style.padding = '5px 10px';
+        textDiv.style.border = '1px solid #ccc';
+        
+        textDiv.ondblclick = function() { this.remove(); };
+        document.getElementById('poster-canvas').appendChild(textDiv);
+        makeDraggable(textDiv);
+    }
+
+    // --- 5. DRAG ENGINE (Optimized) ---
+    function makeDraggable(elmnt) {
+        var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+        var currentTop = 0, currentLeft = 0;
+
+        elmnt.onmousedown = function(e) {
+            if(e.offsetX > elmnt.offsetWidth - 20 && e.offsetY > elmnt.offsetHeight - 20) return;
+            if(e.target.tagName === 'SPAN' || e.target.getAttribute('contenteditable') === 'true' && document.activeElement === e.target) return;
+            
+            e.preventDefault();
+            pos3 = e.clientX; pos4 = e.clientY;
+            currentTop = elmnt.offsetTop; currentLeft = elmnt.offsetLeft;
+
+            document.onmouseup = function() { document.onmouseup = null; document.onmousemove = null; };
+            document.onmousemove = function(e) {
+                e.preventDefault();
+                pos1 = pos3 - e.clientX; pos2 = pos4 - e.clientY;
+                pos3 = e.clientX; pos4 = e.clientY;
+                currentTop = currentTop - pos2; currentLeft = currentLeft - pos1;
+                elmnt.style.top = currentTop + "px"; elmnt.style.left = currentLeft + "px";
+            };
+        };
+    }
+
+    // --- 6. ADD PHOTO ---
+    function addDraggableImage(event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const imgContainer = document.createElement('div');
+                imgContainer.className = 'draggable drag-image-container';
+                imgContainer.style.top = '100px'; imgContainer.style.left = '50px';
+                
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                imgContainer.ondblclick = function() { this.remove(); };
+                
+                imgContainer.appendChild(img);
+                document.getElementById('poster-canvas').appendChild(imgContainer);
+                makeDraggable(imgContainer);
+            }
+            reader.readAsDataURL(file);
+        }
+    }
+
+    // --- 7. PIE CHART ---
+    const ctx = document.getElementById('myPieChart').getContext('2d');
+    let stateChart = new Chart(ctx, {
+        type: 'pie', data: { labels: [], datasets: [{ data: [], backgroundColor: ['#ff7f0e', '#1f77b4', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f'], borderWidth: 1 }] },
+        options: { responsive: true, maintainAspectRatio: false, animation: false, plugins: { legend: { display: false } } }
+    });
+
+    function saveChartData() {
+        const text = document.getElementById('chartDataInput').value;
+        const lines = text.split('\n');
+        let newValues = [], labelData = [];
+        
+        document.querySelectorAll('.drag-label').forEach(el => el.remove());
+        lines.forEach(line => {
+            if(line.includes(',')) {
+                let parts = line.split(',');
+                newValues.push(parseInt(parts[1].trim()));
+                labelData.push(`${parts[0].trim()}: ${parts[1].trim()}`);
+            }
+        });
+        
+        stateChart.data.datasets[0].data = newValues; stateChart.update();
+        
+        labelData.forEach((text, index) => {
+            const labelDiv = document.createElement('div');
+            labelDiv.className = 'draggable drag-label';
+            labelDiv.setAttribute('contenteditable', 'true');
+            labelDiv.innerText = text;
+            labelDiv.style.top = (450 + (index * 35)) + 'px'; labelDiv.style.left = '800px';
+            labelDiv.style.backgroundColor = 'white';
+            labelDiv.style.padding = '4px 8px';
+            labelDiv.style.border = '1px solid #ccc';
+            labelDiv.ondblclick = function() { this.remove(); };
+
+            document.getElementById('poster-canvas').appendChild(labelDiv);
+            makeDraggable(labelDiv);
+        });
+        document.getElementById('chartModal').style.display = 'none';
+    }
+    saveChartData();
+
+    // --- 8. DOWNLOAD IMAGE ---
+    function downloadPoster() {
+        const poster = document.getElementById('poster-canvas');
+        document.querySelectorAll('[contenteditable="true"]').forEach(el => el.style.outline = 'none');
+        document.querySelectorAll('.draggable').forEach(el => { el.style.border = 'none'; });
+        document.querySelectorAll('.drag-image-container').forEach(el => el.style.resize = 'none');
+
+        const style = document.createElement('style');
+        style.innerHTML = '.draggable:hover::after { display: none !important; }';
+        document.head.appendChild(style);
+
+        html2canvas(poster, { scale: 2, useCORS: true }).then(canvas => {
+            let link = document.createElement('a');
+            link.download = 'Final_Report_V6.png';
+            link.href = canvas.toDataURL("image/png");
+            link.click();
+            
+            document.querySelectorAll('[contenteditable="true"]').forEach(el => el.style.outline = '');
+            document.querySelectorAll('.draggable').forEach(el => el.style.border = '1px dashed transparent');
+            document.querySelectorAll('.drag-image-container').forEach(el => { el.style.border = '2px dashed #aaa'; el.style.resize = 'both'; });
+            document.head.removeChild(style);
+        });
+    }
+</script>
+
+</body>
+</html>        .draggable:active { cursor: grabbing; }
         
         /* Specific Floating Types */
         .drag-text { background: transparent; white-space: nowrap; }
