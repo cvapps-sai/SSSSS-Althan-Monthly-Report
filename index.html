@@ -233,9 +233,11 @@ Jharkhand, 1</textarea><br>
         if(property === 'fontSize') activeElement.style.fontSize = document.getElementById('fontSizePicker').value + 'px';
     }
 
-    // --- 2. DRAG AND DROP ENGINE ---
+    // --- 2. DRAG AND DROP ENGINE (OPTIMIZED FOR SPEED) ---
     function makeDraggable(elmnt) {
         var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+        var currentTop = 0, currentLeft = 0; // New memory variables
+
         elmnt.onmousedown = dragMouseDown;
 
         function dragMouseDown(e) {
@@ -244,24 +246,37 @@ Jharkhand, 1</textarea><br>
             if(e.target.tagName === 'SPAN' || e.target.getAttribute('contenteditable') === 'true' && document.activeElement === e.target) return;
             
             e.preventDefault();
-            pos3 = e.clientX; pos4 = e.clientY;
+            pos3 = e.clientX; 
+            pos4 = e.clientY;
+            
+            // Capture the starting position ONLY ONCE when you click
+            currentTop = elmnt.offsetTop;
+            currentLeft = elmnt.offsetLeft;
+
             document.onmouseup = closeDragElement;
             document.onmousemove = elementDrag;
         }
 
         function elementDrag(e) {
             e.preventDefault();
-            pos1 = pos3 - e.clientX; pos2 = pos4 - e.clientY;
-            pos3 = e.clientX; pos4 = e.clientY;
-            elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
-            elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+            pos1 = pos3 - e.clientX; 
+            pos2 = pos4 - e.clientY;
+            pos3 = e.clientX; 
+            pos4 = e.clientY;
+            
+            // Calculate using memory instead of forcing the browser to recalculate layout
+            currentTop = currentTop - pos2;
+            currentLeft = currentLeft - pos1;
+            
+            elmnt.style.top = currentTop + "px";
+            elmnt.style.left = currentLeft + "px";
         }
 
         function closeDragElement() {
-            document.onmouseup = null; document.onmousemove = null;
+            document.onmouseup = null; 
+            document.onmousemove = null;
         }
     }
-
     // --- 3. ADDING FLOATING TEXT (NEW FEATURE) ---
     function addFloatingText() {
         const textDiv = document.createElement('div');
