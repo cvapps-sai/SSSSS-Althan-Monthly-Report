@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Trust Report Builder V10 - Precision Editor</title>
+    <title>Trust Report Builder V11 - Flexible Legends</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&family=Montserrat:wght@400;700&family=Oswald:wght@500&family=Pacifico&family=Playfair+Display:ital,wght@0,600;1,600&family=Poppins:wght@400;600&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
@@ -40,7 +40,7 @@
         .draggable:active { cursor: grabbing; }
         .draggable:hover::after { content: "↔ Move | ↘ Resize"; position: absolute; top: -15px; left: 0; background: #8e44ad; color: white; font-size: 10px; padding: 2px 6px; border-radius: 10px; pointer-events: none; z-index: 100;}
         
-        /* Line Container */
+        /* Specific Containers */
         .drag-line-container { resize: horizontal; overflow: hidden; display: flex; align-items: center; width: 300px; height: 20px; border: 1px dashed transparent; padding: 0 5px;}
         .drag-line-container:hover { border: 1px dashed #8e44ad; background: rgba(142,68,173,0.05); }
         .line-visual { width: 100%; border-top: 2px solid black; pointer-events: none; }
@@ -52,6 +52,10 @@
         .chart-wrapper canvas { width: 100% !important; height: 100% !important; pointer-events: none;}
 
         .data-row { width: 380px; display: flex; justify-content: space-between; font-size: 17px; }
+        
+        /* Custom Legend Container */
+        .custom-legend { display: flex; align-items: center; background: transparent; padding: 2px 5px; font-size: 14px; font-weight: bold;}
+        .legend-color-box { width: 14px; height: 14px; display: inline-block; margin-right: 8px; border-radius: 3px; border: 1px solid rgba(0,0,0,0.2);}
 
         #chartModal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); z-index: 1000; width: 320px;}
         #chartModal textarea { width: 100%; height: 150px; margin-bottom: 15px; font-family: monospace; padding: 10px; box-sizing: border-box;}
@@ -184,9 +188,6 @@
         <div class="draggable" contenteditable="true" style="top: 1150px; left: 40px; color: #1e8449; font-weight: bold; width: 400px; font-size: 18px;">Monthly Narayan Seva: 750 | Grand Total: 5,654</div>
         <div class="draggable" contenteditable="true" style="top: 1150px; left: 480px; color: #cc0000; font-weight: bold; width: 400px; font-size: 18px;">Blood Donation Camps: 07 | Total Blood Units: 204</div>
         
-        <div class="draggable drag-line-container" style="top: 650px; left: 280px; width: 850px; transform: rotate(90deg);" data-rotation="90">
-            <div class="line-visual" style="border-top: 2px dashed #ccc;"></div>
-        </div>
     </div>
 </div>
 
@@ -214,17 +215,18 @@ JHARKHAND, 01</textarea>
 </div>
 
 <script>
-    let activeElement = null; // Text
-    let activeLine = null;    // Lines
-    let activeDraggable = null; // Universal Draggable Container
+    let activeElement = null; 
+    let activeLine = null;    
+    let activeDraggable = null; 
     let highestZ = 100; 
 
     // Initialize all existing draggables
     document.querySelectorAll('.draggable').forEach(el => {
         makeDraggable(el);
-        // Double click to delete fallback
+        // Double click fallback (disabled for text formatting clicks)
         el.addEventListener('dblclick', function(e) {
-            if(e.target.tagName === 'SPAN' || e.target.tagName === 'B') return; // Don't delete if clicking inside formatting
+            if(e.target.tagName === 'SPAN' || e.target.tagName === 'B') return; 
+            if(e.target.getAttribute('contenteditable') === 'true' && document.activeElement === e.target) return;
             this.remove();
         });
     });
@@ -247,20 +249,18 @@ JHARKHAND, 01</textarea>
     }
 
     document.addEventListener('mousedown', function(e) {
-        // Find the main draggable container
         let dragged = e.target.closest('.draggable');
         if(dragged) {
             activeDraggable = dragged;
             activeDraggable.style.zIndex = ++highestZ;
-            
-            // Read current rotation
             let currentRot = activeDraggable.getAttribute('data-rotation') || '0';
             document.getElementById('rotationPicker').value = currentRot;
         }
 
-        // Clicked Text Box
-        if(e.target.getAttribute('contenteditable') === 'true') {
-            activeElement = e.target;
+        // Clicked Text Box (Includes our new Custom Legends)
+        let editableTarget = e.target.closest('[contenteditable="true"]');
+        if(editableTarget) {
+            activeElement = editableTarget;
             activeLine = null;
             
             document.getElementById('active-status').innerText = "Text Selected";
@@ -297,7 +297,7 @@ JHARKHAND, 01</textarea>
         }
     });
 
-    // --- 3. FORMATTING ENGINE (NEW: ROTATION) ---
+    // --- 3. FORMATTING ENGINE ---
     function updateRotation() {
         if(!activeDraggable) return;
         let deg = document.getElementById('rotationPicker').value;
@@ -330,7 +330,7 @@ JHARKHAND, 01</textarea>
         }
     }
 
-    // --- 4. ITEM MANAGEMENT (DUPLICATE & DELETE) ---
+    // --- 4. ITEM MANAGEMENT ---
     function deleteActive() {
         if(!activeDraggable) { alert("Select an item first to delete it."); return; }
         activeDraggable.remove();
@@ -426,32 +426,69 @@ JHARKHAND, 01</textarea>
         };
     }
 
-    // --- 7. CHART ENGINE ---
+    // --- 7. CHART ENGINE (NOW WITH CUSTOM LEGENDS) ---
     let myChartInstance = null;
+    const chartColors = ['#ff7f0e', '#1f77b4', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f'];
+
     function saveChartData() {
         const text = document.getElementById('chartDataInput').value;
         const chartType = document.getElementById('chartTypeSelect').value;
         const lines = text.split('\n');
         let newLabels = [], newValues = [];
 
-        lines.forEach(line => {
+        // 1. Remove old custom legends
+        document.querySelectorAll('.custom-legend-box').forEach(el => el.remove());
+
+        lines.forEach((line, index) => {
             if(line.includes(',')) {
                 let parts = line.split(',');
-                newLabels.push(parts[0].trim());
-                newValues.push(parseInt(parts[1].trim()));
+                let labelText = parts[0].trim();
+                let labelValue = parseInt(parts[1].trim());
+                newLabels.push(labelText);
+                newValues.push(labelValue);
+
+                // 2. Spawn completely independent Custom Legend Draggable for each state
+                const legendDiv = document.createElement('div');
+                legendDiv.className = 'draggable custom-legend-box';
+                legendDiv.style.top = (330 + (index * 35)) + 'px'; 
+                legendDiv.style.left = '850px';
+                legendDiv.style.display = 'flex';
+                legendDiv.style.alignItems = 'center';
+                legendDiv.style.zIndex = ++highestZ;
+
+                // Color Square
+                const colorSquare = document.createElement('span');
+                colorSquare.className = 'legend-color-box';
+                colorSquare.style.backgroundColor = chartColors[index % chartColors.length];
+                
+                // Editable Text Area
+                const textSpan = document.createElement('span');
+                textSpan.setAttribute('contenteditable', 'true');
+                textSpan.innerText = `${labelText}: ${labelValue}`;
+
+                legendDiv.appendChild(colorSquare);
+                legendDiv.appendChild(textSpan);
+
+                // Setup drag and delete
+                legendDiv.addEventListener('dblclick', function(e) { if(e.target.tagName === 'SPAN' && e.target.getAttribute('contenteditable') === 'true') return; this.remove(); });
+                document.getElementById('poster-canvas').appendChild(legendDiv);
+                makeDraggable(legendDiv);
             }
         });
 
+        // 3. Render Chart WITHOUT default legend
         const ctx = document.getElementById('myCanvasChart').getContext('2d');
         if(myChartInstance != null) myChartInstance.destroy();
 
         myChartInstance = new Chart(ctx, {
             type: chartType, 
-            data: { labels: newLabels, datasets: [{ label: 'Patients', data: newValues, backgroundColor: ['#ff7f0e', '#1f77b4', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f'], borderWidth: 1 }] },
-            options: { responsive: true, maintainAspectRatio: false, animation: false, plugins: { legend: { display: chartType !== 'bar', position: 'right' } } }
+            data: { labels: newLabels, datasets: [{ label: 'Patients', data: newValues, backgroundColor: chartColors, borderWidth: 1 }] },
+            options: { responsive: true, maintainAspectRatio: false, animation: false, plugins: { legend: { display: false } } }
         });
         document.getElementById('chartModal').style.display = 'none';
     }
+    
+    // Render the initial chart
     saveChartData();
 
     // --- 8. DOWNLOAD ENGINE ---
@@ -469,7 +506,7 @@ JHARKHAND, 01</textarea>
 
         html2canvas(poster, { scale: 2, useCORS: true }).then(canvas => {
             let link = document.createElement('a');
-            link.download = 'Precision_Editor_Report.png';
+            link.download = 'Flexible_Legends_Report.png';
             link.href = canvas.toDataURL("image/png");
             link.click();
             
